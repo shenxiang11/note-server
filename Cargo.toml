@@ -1,0 +1,38 @@
+[workspace]
+members = [ "comment","interactive", "webook"]
+resolver = "2"
+
+[workspace.dependencies]
+argon2 = { version = "0.5.3", features = ["std"] }
+anyhow = { version = "1.0.94" }
+axum-extra = { version = "0.9.6", features = ["typed-header"] }
+async-graphql = { version = "7.0.13", features = ["chrono"] }
+async-graphql-axum = { version = "7.0.13" }
+axum = { version = "0.7.9", features = ["http2"] }
+axum-server = { version = "0.7.1", features = ["tls-rustls"] }
+chrono = { version = "0.4.39", features = ["serde"] }
+futures = { version = "0.3.31" }
+hyper = { version = "1.5.1", features = ["http2"] }
+sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio", "chrono"] }
+thiserror = { version = "1.0.24" }
+tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread", "signal"] }
+tonic = { version = "0.12.3", features = ["zstd", "tls"] }
+tonic-build = { version = "0.12.3" }
+tokio-stream = { version = "0.1.17" }
+tower = { version = "0.5.2" }
+tower-http = { version = "0.6.2", features = ["timeout", "trace", "request-id", "fs"] }
+tracing = { version = "0.1.41" }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+uuid = { version = "1.11.0", features = ["v7"] }
+lettre = { version = "0.11.11" }
+rand = { version = "0.8.5" }
+redis = { version = "0.27.6" }
+serde = { version = "1.0.216" }
+toml = { version = "0.8.19" }
+deadpool = { version = "0.12.1" }
+deadpool-redis = { version = "0.18.0" }
+jsonwebtoken = { version = "9.3.0" }
+kafka = { version = "0.10.0" }
+serde_json = { version = "1.0.135" }
+prost = { version = "0.13.4" }
+interactive = { path = "./interactive" }

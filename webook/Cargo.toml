@@ -1,0 +1,40 @@
+[package]
+name = "webook"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+async-graphql = { workspace = true }
+async-graphql-axum = { workspace = true }
+axum = { workspace = true }
+axum-server = { workspace = true }
+axum-extra = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
+sqlx = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tokio-stream = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+lettre = { workspace = true }
+rand = { workspace = true }
+redis = { workspace = true }
+serde = { workspace = true }
+argon2 = { workspace = true }
+toml = { workspace = true }
+deadpool = { workspace = true }
+deadpool-redis = { workspace = true }
+jsonwebtoken = { workspace = true }
+kafka = { workspace = true }
+serde_json = { workspace = true }
+interactive = { workspace = true }
+tonic = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+tonic-build = { workspace = true }

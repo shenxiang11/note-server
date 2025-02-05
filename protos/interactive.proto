@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package interactive;
+
+service InteractiveService {
+  rpc SaveCount(SaveCountRequest) returns (SaveCountResponse);
+  rpc GetCount(GetCountRequest) returns (GetCountResponse);
+  rpc Like(LikeRequest) returns (LikeResponse);
+  rpc Unlike(UnlikeRequest) returns (UnlikeResponse);
+}
+
+enum CountBiz {
+  COUNT_UNKNOWN = 0;
+  COUNT_NOTE_READ = 1;
+  COUNT_NOTE_LIKE = 2;
+  COUNT_NOTE_COLLECT = 3;
+  COUNT_NOTE_COMMENT = 4;
+}
+
+message SaveCountRequest {
+  CountBiz biz = 1;
+  int64 biz_id = 2;
+  int64 n = 3;
+}
+
+message SaveCountResponse {}
+
+message GetCountRequest {
+  CountBiz biz = 1;
+  int64 biz_id = 2;
+}
+
+message GetCountResponse {
+  int64 count = 1;
+}
+
+enum UserLikesBiz {
+  USER_LIKES_UNKNOWN = 0;
+  USER_LIKES_NOTE = 1;
+  USER_LIKES_COMMENT = 2;
+}
+
+message LikeRequest {
+  UserLikesBiz biz = 1;
+  int64 user_id = 2;
+  int64 biz_id = 3;
+}
+
+message LikeResponse {}
+
+message UnlikeRequest {
+  UserLikesBiz biz = 1;
+  int64 user_id = 2;
+  int64 biz_id = 3;
+}
+
+message UnlikeResponse {}

@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package comment;
+
+import "google/protobuf/timestamp.proto";
+
+service CommentService {
+  rpc SaveComment(SaveCommentRequest) returns (SaveCommentResponse);
+  rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+  rpc GetMoreComments(GetMoreCommentsRequest) returns (GetMoreCommentsResponse);
+}
+
+message SaveCommentRequest {
+  int64 user_id = 1;
+  int64 biz = 2;
+  int64 biz_id = 3;
+  string content = 4;
+}
+
+message SaveCommentResponse {}
+
+message GetCommentsRequest {
+  int64 biz = 1;
+  int64 biz_id = 2;
+  int64 min_id = 3;
+  int64 limit = 4;
+}
+
+message GetCommentsResponse {
+  repeated Comment comments = 1;
+}
+
+message Comment {
+  int64 id = 1;
+  int64 user_id = 2;
+  int64 biz = 3;
+  int64 biz_id = 4;
+  string content = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  Comment root_comment = 8;
+  Comment parent_comment = 9;
+}
+
+message DeleteCommentRequest {
+  int64 id = 1;
+}
+
+message DeleteCommentResponse {}
+
+// TODO: CHECK
+message GetMoreCommentsRequest {
+  int64 max_id = 1;
+  int64 limit = 2;
+}
+
+message GetMoreCommentsResponse {
+  repeated Comment comments = 1;
+}

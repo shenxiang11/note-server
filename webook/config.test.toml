@@ -1,0 +1,22 @@
+[server]
+port = 8000
+postgres_url = "postgresql://user:password@localhost:5432/postgres"
+postgres_url_read = "postgresql://user:password@localhost:5432/postgres"
+redis_url = "redis://127.0.0.1:6379"
+request_id_header = "X-Request-ID"
+
+[jwt]
+period_seconds = 604800
+sk = """
+-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIDnxJGEJGoW+mNKHn4vRY1V6BQ3MglSQSuZ8featmyC4
+-----END PRIVATE KEY-----
+"""
+pk = """
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAfM+lwNHj6TRJ3EGP38lIJcOo9Dlt2u2JzcwWMbu7jQY=
+-----END PUBLIC KEY-----
+"""
+
+[kafka]
+brokers = ["localhost:9092", "localhost:9093", "localhost:9094", "localhost:9095"]
