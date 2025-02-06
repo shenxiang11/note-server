@@ -107,7 +107,8 @@ impl IMRepo {
         match resp.data {
             Some(data) => {
                 let token = data.token.clone();
-                conn.set("im:admin::token", data.token).await?;
+                conn.set_ex("im:admin::token", data.token, data.expire_time_seconds)
+                    .await?;
                 Ok(token)
             }
             None => Err(anyhow::anyhow!("get token failed: {}", resp.err_msg)),
