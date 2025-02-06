@@ -2,6 +2,10 @@ use crate::model::user::User;
 use crate::util::AuthGuard;
 use crate::AppState;
 use async_graphql::{Context, Object, Result};
+use im::consumer::user_register_consumer::UserRegisterMessage;
+use im::consumer::user_update_consumer::UserUpdateMessage;
+use serde::{Deserialize, Serialize};
+use tracing::error;
 
 #[derive(Default)]
 pub(crate) struct UserMutation;
@@ -16,14 +20,39 @@ impl UserMutation {
         avatar: Option<String>,
         bio: Option<String>,
     ) -> Result<User> {
-        let state = ctx.data::<AppState>()?;
+        let state = ctx.data::<AppState>()?.clone();
         let user_id = ctx.data::<i64>()?;
 
-        let user = state
+        let user_ret = state
             .user_srv
-            .update_profile(*user_id, fullname, avatar, bio)
+            .update_profile(*user_id, fullname.clone(), avatar.clone(), bio)
             .await?;
-        Ok(user)
+
+        if fullname.is_some() || avatar.is_some() {
+            let user = user_ret.clone();
+            tokio::spawn(async move {
+                let data = UserUpdateMessage {
+                    user_id: user.id,
+                    nickname: user.fullname.clone(),
+                    face_url: user.avatar.clone(),
+                };
+                let data = serde_json::to_string(&data);
+                if let Err(e) = data {
+                    error!("failed to serialize user update message: {}", e);
+                    return;
+                }
+                let ret = state.message_queue.produce_message(
+                    user.id.to_string().as_bytes(),
+                    String::as_bytes(&data.unwrap_or_default()),
+                    "UserUpdate",
+                );
+                if let Err(e) = ret {
+                    error!("failed to produce message: {}", e);
+                }
+            });
+        }
+
+        Ok(user_ret)
     }
 
     pub async fn signin(
@@ -48,11 +77,33 @@ impl UserMutation {
         password: String,
         code: String,
     ) -> Result<User> {
-        let state = ctx.data::<AppState>()?;
+        let state = ctx.data::<AppState>()?.clone();
 
         let user = state.user_srv.signup(&email, &password, &code).await?;
 
-        Ok(user)
+        let user_ret = user.clone();
+        tokio::spawn(async move {
+            let data = UserRegisterMessage {
+                user_id: user.id,
+                nickname: user.fullname.clone(),
+                face_url: user.avatar.clone(),
+            };
+            let data = serde_json::to_string(&data);
+            if let Err(e) = data {
+                error!("failed to serialize user register message: {}", e);
+                return;
+            }
+            let ret = state.message_queue.produce_message(
+                user.id.to_string().as_bytes(),
+                String::as_bytes(&data.unwrap_or_default()),
+                "UserRegister",
+            );
+            if let Err(e) = ret {
+                error!("failed to produce message: {}", e);
+            }
+        });
+
+        Ok(user_ret)
     }
 
     // 发送邮箱注册验证码
