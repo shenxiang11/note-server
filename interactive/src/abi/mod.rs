@@ -1,7 +1,7 @@
 use crate::model::{CountBiz, UserLikesBiz};
 use crate::pb::{
-    GetCountRequest, GetCountResponse, LikeRequest, LikeResponse, SaveCountRequest,
-    SaveCountResponse, UnlikeRequest, UnlikeResponse,
+    BatchGetCountRequest, BatchGetCountResponse, GetCountRequest, GetCountResponse, LikeRequest,
+    LikeResponse, SaveCountRequest, SaveCountResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::InteractiveSrv;
 use tonic::{Response, Status};
@@ -78,6 +78,29 @@ impl InteractiveSrv {
 
         match ret {
             Ok(_) => Ok(Response::new(UnlikeResponse {})),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn batch_get_count(
+        &self,
+        req: BatchGetCountRequest,
+    ) -> Result<Response<BatchGetCountResponse>, Status> {
+        let ret: Result<CountBiz, _> = req.biz.try_into();
+        let biz = match ret {
+            Ok(biz) => biz,
+            Err(e) => return Err(Status::invalid_argument(e.to_string())),
+        };
+        let mut ret = self
+            .interactive_repo
+            .batch_get_count(biz, req.biz_ids)
+            .await;
+
+        match ret {
+            Ok(counts) => {
+                let resp = BatchGetCountResponse { counts };
+                Ok(Response::new(resp))
+            }
             Err(e) => Err(Status::internal(e.to_string())),
         }
     }

@@ -1,7 +1,7 @@
 use crate::pb::interactive_service_server::InteractiveService;
 use crate::pb::{
-    GetCountRequest, GetCountResponse, LikeRequest, LikeResponse, SaveCountRequest,
-    SaveCountResponse, UnlikeRequest, UnlikeResponse,
+    BatchGetCountRequest, BatchGetCountResponse, GetCountRequest, GetCountResponse, LikeRequest,
+    LikeResponse, SaveCountRequest, SaveCountResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::repository::InteractiveRepo;
 use tonic::{async_trait, IntoRequest, Request, Response, Status};
@@ -37,6 +37,13 @@ impl InteractiveService for InteractiveSrv {
         request: Request<GetCountRequest>,
     ) -> Result<Response<GetCountResponse>, Status> {
         self.get_count(request.into_inner()).await
+    }
+
+    async fn batch_get_count(
+        &self,
+        request: Request<BatchGetCountRequest>,
+    ) -> Result<Response<BatchGetCountResponse>, Status> {
+        self.batch_get_count(request.into_inner()).await
     }
 
     async fn like(&self, request: Request<LikeRequest>) -> Result<Response<LikeResponse>, Status> {

@@ -31,6 +31,18 @@ impl NoteSrv {
         Ok(result)
     }
 
+    pub async fn get_published_notes(&self) -> Result<Vec<PublishedNote>> {
+        let result: Vec<PublishedNote> = sqlx::query_as(
+            r#"
+            SELECT * FROM published_notes;
+            "#,
+        )
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn upsert(&self, user_id: i64, input: EditNoteInput) -> Result<Note> {
         let id = input.id;
         let title = input.title;

@@ -5,6 +5,7 @@ package interactive;
 service InteractiveService {
   rpc SaveCount(SaveCountRequest) returns (SaveCountResponse);
   rpc GetCount(GetCountRequest) returns (GetCountResponse);
+  rpc BatchGetCount(BatchGetCountRequest) returns (BatchGetCountResponse);
   rpc Like(LikeRequest) returns (LikeResponse);
   rpc Unlike(UnlikeRequest) returns (UnlikeResponse);
 }
@@ -32,6 +33,15 @@ message GetCountRequest {
 
 message GetCountResponse {
   int64 count = 1;
+}
+
+message BatchGetCountRequest {
+  CountBiz biz = 1;
+  repeated int64 biz_ids = 2;
+}
+
+message BatchGetCountResponse {
+  map<int64, int64> counts = 1;
 }
 
 enum UserLikesBiz {

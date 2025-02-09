@@ -1,6 +1,8 @@
 use crate::model::{CountBiz, Counter, NoteReadMessage, UserHistoryBiz, UserLikesBiz};
 use anyhow::Result;
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::ops::Deref;
 use std::sync::Arc;
 
@@ -32,6 +34,33 @@ impl InteractiveRepo {
                 db_read,
             }),
         }
+    }
+
+    pub async fn batch_get_count(
+        &self,
+        biz: CountBiz,
+        biz_ids: Vec<i64>,
+    ) -> Result<HashMap<i64, i64>> {
+        let counts: HashMap<i64, i64> = sqlx::query(
+            r#"
+            SELECT *
+            FROM counters
+            WHERE biz = $1 AND biz_id = ANY($2);
+            "#,
+        )
+        .bind(biz)
+        .bind(&biz_ids)
+        .fetch_all(&self.db_read)
+        .await?
+        .iter()
+        .map(|row| {
+            let biz_id: i64 = row.get("biz_id");
+            let count: i64 = row.get("count");
+            (biz_id, count)
+        })
+        .collect();
+
+        Ok(counts)
     }
 
     pub async fn save_count(&self, biz: CountBiz, biz_id: i64, n: i64) -> Result<()> {

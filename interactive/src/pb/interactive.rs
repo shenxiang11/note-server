@@ -22,6 +22,18 @@ pub struct GetCountResponse {
     #[prost(int64, tag = "1")]
     pub count: i64,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetCountRequest {
+    #[prost(enumeration = "CountBiz", tag = "1")]
+    pub biz: i32,
+    #[prost(int64, repeated, tag = "2")]
+    pub biz_ids: ::prost::alloc::vec::Vec<i64>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetCountResponse {
+    #[prost(map = "int64, int64", tag = "1")]
+    pub counts: ::std::collections::HashMap<i64, i64>,
+}
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct LikeRequest {
     #[prost(enumeration = "UserLikesBiz", tag = "1")]
@@ -247,6 +259,32 @@ pub mod interactive_service_client {
                 .insert(GrpcMethod::new("interactive.InteractiveService", "GetCount"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn batch_get_count(
+            &mut self,
+            request: impl tonic::IntoRequest<super::BatchGetCountRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetCountResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/interactive.InteractiveService/BatchGetCount",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("interactive.InteractiveService", "BatchGetCount"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn like(
             &mut self,
             request: impl tonic::IntoRequest<super::LikeRequest>,
@@ -316,6 +354,13 @@ pub mod interactive_service_server {
             request: tonic::Request<super::GetCountRequest>,
         ) -> std::result::Result<
             tonic::Response<super::GetCountResponse>,
+            tonic::Status,
+        >;
+        async fn batch_get_count(
+            &self,
+            request: tonic::Request<super::BatchGetCountRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetCountResponse>,
             tonic::Status,
         >;
         async fn like(
@@ -478,6 +523,52 @@ pub mod interactive_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = GetCountSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/interactive.InteractiveService/BatchGetCount" => {
+                    #[allow(non_camel_case_types)]
+                    struct BatchGetCountSvc<T: InteractiveService>(pub Arc<T>);
+                    impl<
+                        T: InteractiveService,
+                    > tonic::server::UnaryService<super::BatchGetCountRequest>
+                    for BatchGetCountSvc<T> {
+                        type Response = super::BatchGetCountResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::BatchGetCountRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as InteractiveService>::batch_get_count(&inner, request)
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = BatchGetCountSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

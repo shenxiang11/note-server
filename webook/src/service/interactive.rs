@@ -1,6 +1,7 @@
 use anyhow::Result;
 use interactive::pb::interactive_service_client::InteractiveServiceClient;
 use interactive::pb::{CountBiz, GetCountRequest, LikeRequest, UnlikeRequest, UserLikesBiz};
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
 use tonic::transport::Channel;
@@ -53,6 +54,22 @@ impl InteractiveSrv {
             .await?;
 
         Ok(())
+    }
+
+    pub async fn batch_get_count(
+        &self,
+        biz: CountBiz,
+        biz_ids: Vec<i64>,
+    ) -> Result<HashMap<i64, i64>> {
+        let mut client = self.client.clone();
+        let resp = client
+            .batch_get_count(interactive::pb::BatchGetCountRequest {
+                biz: biz as i32,
+                biz_ids,
+            })
+            .await?
+            .into_inner();
+        Ok(resp.counts)
     }
 
     pub async fn get_count(&self, biz: CountBiz, biz_id: i64) -> Result<i64> {

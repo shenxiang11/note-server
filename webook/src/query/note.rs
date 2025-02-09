@@ -9,8 +9,10 @@ pub(crate) struct NoteQuery;
 
 #[Object]
 impl NoteQuery {
-    pub async fn echo(&self) -> Result<String> {
-        Ok("hello".to_string())
+    pub async fn published_notes(&self, ctx: &Context<'_>) -> Result<Vec<PublishedNote>> {
+        let state = ctx.data::<AppState>()?;
+        let notes = state.note_srv.get_published_notes().await?;
+        Ok(notes)
     }
 
     pub async fn published_note(&self, ctx: &Context<'_>, id: i64) -> Result<PublishedNote> {

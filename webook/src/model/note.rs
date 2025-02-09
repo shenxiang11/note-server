@@ -1,9 +1,11 @@
-use async_graphql::{ComplexObject, Enum, Result, SimpleObject};
+use crate::service::interactive::InteractiveSrv;
+use async_graphql::dataloader::{DataLoader, Loader};
+use async_graphql::{ComplexObject, Enum, FieldError, Result, SimpleObject};
 use chrono::{DateTime, Utc};
 use interactive::pb::CountBiz;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use tracing::error;
+use std::collections::HashMap;
 
 #[derive(
     Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, sqlx::Type, Enum, Copy, Eq,
@@ -72,21 +74,38 @@ pub struct PublishedNote {
     pub updated_at: DateTime<Utc>,
 }
 
+pub struct PublishedNoteViewsLoader {
+    interactive_srv: InteractiveSrv,
+}
+
+impl PublishedNoteViewsLoader {
+    pub fn new(interactive_srv: InteractiveSrv) -> Self {
+        Self { interactive_srv }
+    }
+}
+
+impl Loader<i64> for PublishedNoteViewsLoader {
+    type Value = i64;
+    type Error = FieldError;
+
+    async fn load(&self, keys: &[i64]) -> Result<HashMap<i64, Self::Value>, Self::Error> {
+        let ret = self
+            .interactive_srv
+            .batch_get_count(CountBiz::CountNoteRead, keys.to_vec())
+            .await;
+        match ret {
+            Ok(hm) => Ok(hm),
+            Err(e) => Err(FieldError::from(e)),
+        }
+    }
+}
+
 #[ComplexObject]
 impl PublishedNote {
     pub async fn views(&self, ctx: &async_graphql::Context<'_>) -> Result<i64> {
-        let state = ctx.data::<crate::AppState>()?;
-        let ret = state
-            .interactive_srv
-            .get_count(CountBiz::CountNoteRead, self.id)
-            .await;
+        let loader = ctx.data::<DataLoader<PublishedNoteViewsLoader>>()?;
+        let ret = loader.load_one(self.id).await?;
 
-        match ret {
-            Ok(count) => Ok(count),
-            Err(e) => {
-                error!("failed to get views: {}", e);
-                Ok(0)
-            }
-        }
+        Ok(ret.unwrap_or_default())
     }
 }

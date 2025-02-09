@@ -1,4 +1,5 @@
 use crate::config::AppConfig;
+use crate::model::note::PublishedNoteViewsLoader;
 use crate::mutation::MutationRoot;
 use crate::query::QueryRoot;
 use crate::service::interactive::InteractiveSrv;
@@ -7,6 +8,7 @@ use crate::service::user::UserSrv;
 use crate::util::jwt_handler::JwtHandler;
 use crate::util::message_queue::MessageQueue;
 use anyhow::Result;
+use async_graphql::dataloader::DataLoader;
 use async_graphql::extensions::ExtensionFactory;
 use async_graphql::http::GraphiQLSource;
 use async_graphql::{EmptySubscription, Schema};
@@ -51,6 +53,10 @@ pub async fn start_server(
         MutationRoot::default(),
         EmptySubscription,
     )
+    .data(DataLoader::new(
+        PublishedNoteViewsLoader::new(app_state.interactive_srv.clone()),
+        tokio::spawn,
+    ))
     .data(app_state.clone())
     .finish();
 
