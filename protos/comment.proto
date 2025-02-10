@@ -11,17 +11,27 @@ service CommentService {
   rpc GetMoreComments(GetMoreCommentsRequest) returns (GetMoreCommentsResponse);
 }
 
-message SaveCommentRequest {
-  int64 user_id = 1;
-  int64 biz = 2;
-  int64 biz_id = 3;
-  string content = 4;
+enum CommentBiz {
+  COMMENT_UNKNOWN = 0;
+  COMMENT_NOTE = 1;
+  COMMENT_COMMENT = 2;
 }
 
-message SaveCommentResponse {}
+message SaveCommentRequest {
+  int64 user_id = 1;
+  CommentBiz biz = 2;
+  int64 biz_id = 3;
+  string content = 4;
+  optional int64 root_id = 5;
+  optional int64 parent_id = 6;
+}
+
+message SaveCommentResponse {
+  Comment comment = 1;
+}
 
 message GetCommentsRequest {
-  int64 biz = 1;
+  CommentBiz biz = 1;
   int64 biz_id = 2;
   int64 min_id = 3;
   int64 limit = 4;
@@ -34,13 +44,13 @@ message GetCommentsResponse {
 message Comment {
   int64 id = 1;
   int64 user_id = 2;
-  int64 biz = 3;
+  CommentBiz biz = 3;
   int64 biz_id = 4;
   string content = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
-  Comment root_comment = 8;
-  Comment parent_comment = 9;
+  optional int64 root_id = 6;
+  optional int64 parent_id = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }
 
 message DeleteCommentRequest {

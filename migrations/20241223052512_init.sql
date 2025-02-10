@@ -107,14 +107,3 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
--- Test Data
-INSERT INTO "public"."users" ("id", "serial_number", "fullname", "email", "password_hash", "avatar", "bio", "created_at") VALUES
-    (1, '20250114230001', '小黄人na7', '863461783@qq.com', '$argon2id$v=19$m=19456,t=2,p=1$Ogz47a+7nKodmkn4Hrjcag$S4rs/nyGR4108FuV4xMBkX4AXxaGi5ILp07FO8LV+NI', 'https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31bo9i342ge0040qk11mevsabtfhes5g', NULL, '2025-01-14 15:03:05.751299+00');
-INSERT INTO "public"."users" ("id", "serial_number", "fullname", "email", "password_hash", "avatar", "bio", "created_at") VALUES
-    (2, '20250202190002', '朱可人Coralie', '108182470@xhs.com', '$argon2id$v=19$m=19456,t=2,p=1$oHTBmwVEM01BSzbu/RRJIQ$Bmt2rEcIvnit1dwkiXDslb6G8mgRtu5FxVnYKdJ+jg0', 'https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31ati2qro6q0048f26jg653ipnnnjn80?imageView2/2/w/540/format/webp|imageMogr2/strip2', NULL, '2025-02-02 11:48:29.071396+00');
-
-INSERT INTO "public"."notes" ("id", "user_id", "status", "title", "content", "images", "video", "type", "created_at", "updated_at") VALUES
-    (1, 2, 'published', '长发留念', NULL, '{https://sns-webpic-qc.xhscdn.com/202502022142/987ea90496451c3ddb31e57ea92438f7/1040g2sg319b6ucds5o0048f26jg653ip3p7hs98!nd_dft_wlteh_webp_3,https://sns-webpic-qc.xhscdn.com/202502022142/286de2e9f4db2c536f725b530df9399c/1040g2sg319b6ucds5o0g48f26jg653ipa7v6c88!nd_dft_wlteh_webp_3}', NULL, 'normal', '2025-02-02 13:43:26.777+00', '2025-02-02 13:43:26.777+00');
-INSERT INTO "public"."published_notes" ("id", "user_id", "status", "title", "content", "images", "video", "type", "created_at", "updated_at") VALUES
-    (1, 2, 'published', '长发留念', NULL, '{https://sns-webpic-qc.xhscdn.com/202502022142/987ea90496451c3ddb31e57ea92438f7/1040g2sg319b6ucds5o0048f26jg653ip3p7hs98!nd_dft_wlteh_webp_3,https://sns-webpic-qc.xhscdn.com/202502022142/286de2e9f4db2c536f725b530df9399c/1040g2sg319b6ucds5o0g48f26jg653ipa7v6c88!nd_dft_wlteh_webp_3}', NULL, 'normal', '2025-02-02 13:43:26.842052+00', '2025-02-02 13:43:26.842052+00');

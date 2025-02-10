@@ -48,7 +48,6 @@ impl NoteReadConsumer {
                 }
                 con.consume_messageset(ms)?;
             }
-
             self.handle_count(messages_batch.clone());
             self.handle_history(messages_batch.clone());
             messages_batch.clear();
@@ -92,6 +91,7 @@ impl NoteReadConsumer {
         let interactive_repo = self.interactive_repo.clone();
         tokio::spawn(async move {
             for (biz_id, count) in count_map.iter() {
+                println!("biz_id: {}, count: {}", biz_id, count);
                 let ret = interactive_repo
                     .save_count(CountBiz::NoteRead, *biz_id, *count)
                     .await;

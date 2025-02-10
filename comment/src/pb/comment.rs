@@ -3,19 +3,26 @@
 pub struct SaveCommentRequest {
     #[prost(int64, tag = "1")]
     pub user_id: i64,
-    #[prost(int64, tag = "2")]
-    pub biz: i64,
+    #[prost(enumeration = "CommentBiz", tag = "2")]
+    pub biz: i32,
     #[prost(int64, tag = "3")]
     pub biz_id: i64,
     #[prost(string, tag = "4")]
     pub content: ::prost::alloc::string::String,
+    #[prost(int64, optional, tag = "5")]
+    pub root_id: ::core::option::Option<i64>,
+    #[prost(int64, optional, tag = "6")]
+    pub parent_id: ::core::option::Option<i64>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SaveCommentResponse {
+    #[prost(message, optional, tag = "1")]
+    pub comment: ::core::option::Option<Comment>,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
-pub struct SaveCommentResponse {}
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GetCommentsRequest {
-    #[prost(int64, tag = "1")]
-    pub biz: i64,
+    #[prost(enumeration = "CommentBiz", tag = "1")]
+    pub biz: i32,
     #[prost(int64, tag = "2")]
     pub biz_id: i64,
     #[prost(int64, tag = "3")]
@@ -34,20 +41,20 @@ pub struct Comment {
     pub id: i64,
     #[prost(int64, tag = "2")]
     pub user_id: i64,
-    #[prost(int64, tag = "3")]
-    pub biz: i64,
+    #[prost(enumeration = "CommentBiz", tag = "3")]
+    pub biz: i32,
     #[prost(int64, tag = "4")]
     pub biz_id: i64,
     #[prost(string, tag = "5")]
     pub content: ::prost::alloc::string::String,
-    #[prost(message, optional, tag = "6")]
+    #[prost(int64, optional, tag = "6")]
+    pub root_id: ::core::option::Option<i64>,
+    #[prost(int64, optional, tag = "7")]
+    pub parent_id: ::core::option::Option<i64>,
+    #[prost(message, optional, tag = "8")]
     pub created_at: ::core::option::Option<::prost_types::Timestamp>,
-    #[prost(message, optional, tag = "7")]
+    #[prost(message, optional, tag = "9")]
     pub updated_at: ::core::option::Option<::prost_types::Timestamp>,
-    #[prost(message, optional, boxed, tag = "8")]
-    pub root_comment: ::core::option::Option<::prost::alloc::boxed::Box<Comment>>,
-    #[prost(message, optional, boxed, tag = "9")]
-    pub parent_comment: ::core::option::Option<::prost::alloc::boxed::Box<Comment>>,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeleteCommentRequest {
@@ -68,6 +75,35 @@ pub struct GetMoreCommentsRequest {
 pub struct GetMoreCommentsResponse {
     #[prost(message, repeated, tag = "1")]
     pub comments: ::prost::alloc::vec::Vec<Comment>,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum CommentBiz {
+    CommentUnknown = 0,
+    CommentNote = 1,
+    CommentComment = 2,
+}
+impl CommentBiz {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::CommentUnknown => "COMMENT_UNKNOWN",
+            Self::CommentNote => "COMMENT_NOTE",
+            Self::CommentComment => "COMMENT_COMMENT",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "COMMENT_UNKNOWN" => Some(Self::CommentUnknown),
+            "COMMENT_NOTE" => Some(Self::CommentNote),
+            "COMMENT_COMMENT" => Some(Self::CommentComment),
+            _ => None,
+        }
+    }
 }
 /// Generated client implementations.
 pub mod comment_service_client {

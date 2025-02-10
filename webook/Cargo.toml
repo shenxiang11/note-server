@@ -33,8 +33,11 @@ jsonwebtoken = { workspace = true }
 kafka = { workspace = true }
 serde_json = { workspace = true }
 interactive = { workspace = true }
+comment = { workspace = true }
 tonic = { workspace = true }
 im = { workspace = true }
+prost-types = { workspace = true }
+derive_more = { workspace = true }
 
 [build-dependencies]
 anyhow = { workspace = true }

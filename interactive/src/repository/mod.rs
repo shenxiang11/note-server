@@ -64,7 +64,7 @@ impl InteractiveRepo {
     }
 
     pub async fn save_count(&self, biz: CountBiz, biz_id: i64, n: i64) -> Result<()> {
-        let _ = sqlx::query(
+        let ret = sqlx::query(
             r#"
             INSERT INTO counters (biz, biz_id, count)
             VALUES ($1, $2, $3)
@@ -76,7 +76,11 @@ impl InteractiveRepo {
         .bind(biz_id)
         .bind(n)
         .execute(&self.db)
-        .await?;
+        .await;
+
+        if let Err(e) = ret {
+            println!("save_count failed: {}", e);
+        }
 
         Ok(())
     }

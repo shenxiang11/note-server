@@ -2,6 +2,7 @@ use crate::config::AppConfig;
 use crate::model::note::PublishedNoteViewsLoader;
 use crate::mutation::MutationRoot;
 use crate::query::QueryRoot;
+use crate::service::comment::CommentSrv;
 use crate::service::interactive::InteractiveSrv;
 use crate::service::note::NoteSrv;
 use crate::service::user::UserSrv;
@@ -18,6 +19,7 @@ use axum::http::{HeaderMap, HeaderName, Request};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{response, Extension, Router};
+use comment::pb::comment::comment_service_client::CommentServiceClient;
 use deadpool::Runtime;
 use deadpool_redis::Config;
 use interactive::pb::interactive_service_client::InteractiveServiceClient;
@@ -206,6 +208,11 @@ impl AppState {
             .expect("Failed to connect to interactive service");
         let interactive_srv = InteractiveSrv::new(interactive_client);
 
+        let comment_client = CommentServiceClient::connect("http://127.0.0.1:50002")
+            .await
+            .expect("Failed to connect to comment service");
+        let comment_srv = CommentSrv::new(comment_client);
+
         Self {
             inner: Arc::new(AppStateInner {
                 app_config,
@@ -214,6 +221,7 @@ impl AppState {
                 user_srv: UserSrv::new(db.clone(), db_read.clone(), rdb),
                 note_srv: NoteSrv::new(db.clone(), db_read.clone()),
                 interactive_srv,
+                comment_srv,
             }),
         }
     }
@@ -234,4 +242,5 @@ pub struct AppStateInner {
     pub(crate) user_srv: UserSrv,
     pub(crate) note_srv: NoteSrv,
     pub(crate) interactive_srv: InteractiveSrv,
+    pub(crate) comment_srv: CommentSrv,
 }

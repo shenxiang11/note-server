@@ -42,23 +42,24 @@ impl CommentRepo {
         root_id: Option<i64>,
         parent_id: Option<i64>,
         content: String,
-    ) -> Result<()> {
-        let _ = sqlx::query(
+    ) -> Result<Comment> {
+        let comment: Comment = sqlx::query_as(
             r#"
             INSERT INTO comments (user_id, biz, biz_id, root_id, parent_id, content)
-            VALUES ($1, $2, $3, $4, $5, $6);
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
             "#,
         )
         .bind(user_id)
-        .bind(biz as CommentBiz)
+        .bind(biz)
         .bind(biz_id)
         .bind(root_id)
         .bind(parent_id)
         .bind(content)
-        .execute(&self.db)
+        .fetch_one(&self.db)
         .await?;
 
-        Ok(())
+        Ok(comment)
     }
 
     pub async fn find_by_biz(
