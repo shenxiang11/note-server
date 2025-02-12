@@ -8,6 +8,7 @@ service CommentService {
   rpc SaveComment(SaveCommentRequest) returns (SaveCommentResponse);
   rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse);
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+  rpc BatchGetReplies(BatchGetRepliesRequest) returns (BatchGetRepliesResponse);
   rpc GetMoreComments(GetMoreCommentsRequest) returns (GetMoreCommentsResponse);
 }
 
@@ -15,6 +16,18 @@ enum CommentBiz {
   COMMENT_UNKNOWN = 0;
   COMMENT_NOTE = 1;
   COMMENT_COMMENT = 2;
+}
+
+message BatchGetRepliesRequest {
+  repeated int64 ids = 1;
+}
+
+message ListOfComment {
+  repeated Comment comments = 1;
+}
+
+message BatchGetRepliesResponse {
+  map<int64, ListOfComment> replies = 1;
 }
 
 message SaveCommentRequest {

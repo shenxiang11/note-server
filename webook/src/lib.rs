@@ -1,4 +1,5 @@
 use crate::config::AppConfig;
+use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
 use crate::model::note::PublishedNoteViewsLoader;
 use crate::mutation::MutationRoot;
 use crate::query::QueryRoot;
@@ -36,6 +37,8 @@ use uuid::Uuid;
 
 mod app_error;
 pub mod config;
+mod data_loader;
+pub mod dto;
 mod model;
 mod mutation;
 mod query;
@@ -55,6 +58,10 @@ pub async fn start_server(
         MutationRoot::default(),
         EmptySubscription,
     )
+    .data(DataLoader::new(
+        CommentRepliesLoader::new(app_state.comment_srv.clone()),
+        tokio::spawn,
+    ))
     .data(DataLoader::new(
         PublishedNoteViewsLoader::new(app_state.interactive_srv.clone()),
         tokio::spawn,

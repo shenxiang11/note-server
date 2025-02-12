@@ -1,12 +1,13 @@
 use crate::pb::comment::comment_service_server::CommentService;
 use crate::pb::comment::{
-    DeleteCommentRequest, DeleteCommentResponse, GetCommentsRequest, GetCommentsResponse,
-    GetMoreCommentsRequest, GetMoreCommentsResponse, SaveCommentRequest, SaveCommentResponse,
+    BatchGetRepliesRequest, BatchGetRepliesResponse, DeleteCommentRequest, DeleteCommentResponse,
+    GetCommentsRequest, GetCommentsResponse, GetMoreCommentsRequest, GetMoreCommentsResponse,
+    SaveCommentRequest, SaveCommentResponse,
 };
 use crate::repository::CommentRepo;
 use tonic::{async_trait, Request, Response, Status};
 
-mod abi;
+pub mod abi;
 pub mod config;
 pub mod model;
 pub mod pb;
@@ -24,6 +25,13 @@ impl CommentSrv {
 
 #[async_trait]
 impl CommentService for CommentSrv {
+    async fn batch_get_replies(
+        &self,
+        request: Request<BatchGetRepliesRequest>,
+    ) -> Result<Response<BatchGetRepliesResponse>, Status> {
+        self.batch_get_replies(request.into_inner()).await
+    }
+
     async fn save_comment(
         &self,
         request: Request<SaveCommentRequest>,
@@ -35,7 +43,7 @@ impl CommentService for CommentSrv {
         &self,
         request: Request<GetCommentsRequest>,
     ) -> Result<Response<GetCommentsResponse>, Status> {
-        todo!()
+        self.get_comments(request.into_inner()).await
     }
 
     async fn delete_comment(
@@ -50,5 +58,25 @@ impl CommentService for CommentSrv {
         request: Request<GetMoreCommentsRequest>,
     ) -> Result<Response<GetMoreCommentsResponse>, Status> {
         todo!()
+    }
+}
+
+fn comment_to_pb(comment: model::Comment) -> pb::comment::Comment {
+    pb::comment::Comment {
+        id: comment.id,
+        user_id: comment.user_id,
+        biz: comment.biz as i32,
+        biz_id: comment.biz_id,
+        root_id: comment.root_id,
+        parent_id: comment.parent_id,
+        content: comment.content.clone(),
+        created_at: Some(prost_types::Timestamp {
+            seconds: comment.created_at.timestamp(),
+            nanos: 0,
+        }),
+        updated_at: Some(prost_types::Timestamp {
+            seconds: comment.updated_at.timestamp(),
+            nanos: 0,
+        }),
     }
 }

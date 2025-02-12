@@ -1,6 +1,6 @@
 use async_graphql::{Enum, SimpleObject};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::{DateTime, Utc};
 use sqlx::FromRow;
 
 #[derive(
@@ -38,3 +38,26 @@ pub struct Comment {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
+
+// impl Comment {
+//     pub fn to_pb(&self) {
+//         let _ = CommentBiz::Comment;
+//         // CommentPb {
+//         //     id: self.id,
+//         //     user_id: self.user_id,
+//         //     biz: self.biz as i32,
+//         //     biz_id: self.biz_id,
+//         //     root_id: self.root_id,
+//         //     parent_id: self.parent_id,
+//         //     content: self.content.clone(),
+//         //     created_at: Some(prost_types::Timestamp {
+//         //         seconds: self.created_at.timestamp(),
+//         //         nanos: 0,
+//         //     }),
+//         //     updated_at: Some(prost_types::Timestamp {
+//         //         seconds: self.updated_at.timestamp(),
+//         //         nanos: 0,
+//         //     }),
+//         // }
+//     }
+// }
