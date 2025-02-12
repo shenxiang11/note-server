@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package note;
+
+service NoteService {
+  rpc CreateOrUpdate(CreateOrUpdateRequest) returns (CreateOrUpdateResponse);
+}
+
+enum NoteStatus {
+  NOTE_STATUS_UNKNOWN = 0;
+  NOTE_STATUS_DRAFT = 1;
+  NOTE_STATUS_PUBLISHED = 2;
+}
+
+message ImageList {
+  repeated string images = 1;
+}
+
+message CreateOrUpdateRequest {
+  int64 user_id = 1;
+  optional int64 id = 2;
+  optional string title = 3;
+  optional string content = 4;
+  optional ImageList images = 5;
+  optional string video = 6;
+  optional NoteStatus status = 7;
+}
+
+message CreateOrUpdateResponse {}
