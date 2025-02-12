@@ -1,4 +1,5 @@
 use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
+use crate::data_loader::replies_count_loader::RepliesCountLoader;
 use crate::util::time::PbTimestamp;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
@@ -21,6 +22,13 @@ pub struct Comment {
 impl Comment {
     pub async fn top_two_replies(&self, ctx: &Context<'_>) -> Result<Vec<Comment>> {
         let loader = ctx.data::<DataLoader<CommentRepliesLoader>>()?;
+        let ret = loader.load_one(self.id).await?;
+
+        Ok(ret.unwrap_or_default())
+    }
+
+    pub async fn replies_count(&self, ctx: &Context<'_>) -> Result<i64> {
+        let loader = ctx.data::<DataLoader<RepliesCountLoader>>()?;
         let ret = loader.load_one(self.id).await?;
 
         Ok(ret.unwrap_or_default())

@@ -3,7 +3,8 @@ use crate::util::time::PbTimestamp;
 use anyhow::Result;
 use comment::pb::comment::comment_service_client::CommentServiceClient;
 use comment::pb::comment::{
-    BatchGetRepliesRequest, CommentBiz, GetCommentsRequest, SaveCommentRequest,
+    BatchGetRepliesCountRequest, BatchGetRepliesRequest, CommentBiz, GetCommentsRequest,
+    SaveCommentRequest,
 };
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -32,6 +33,21 @@ impl CommentSrv {
         Self {
             inner: Arc::new(CommentSrvInner { client }),
         }
+    }
+
+    pub async fn batch_get_replies_count(&self, biz_ids: Vec<i64>) -> Result<HashMap<i64, i64>> {
+        let mut client = self.client.clone();
+        let ret = client
+            .batch_get_replies_count(BatchGetRepliesCountRequest { ids: biz_ids })
+            .await?
+            .into_inner();
+
+        let mut result: HashMap<i64, i64> = HashMap::new();
+        for (biz_id, count) in ret.replies_count.into_iter() {
+            result.insert(biz_id, count);
+        }
+
+        Ok(result)
     }
 
     pub async fn batch_get_replies(&self, biz_ids: Vec<i64>) -> Result<HashMap<i64, Vec<Comment>>> {

@@ -1,8 +1,9 @@
 use crate::pb::comment::comment_service_server::CommentService;
 use crate::pb::comment::{
-    BatchGetRepliesRequest, BatchGetRepliesResponse, DeleteCommentRequest, DeleteCommentResponse,
-    GetCommentsRequest, GetCommentsResponse, GetMoreCommentsRequest, GetMoreCommentsResponse,
-    SaveCommentRequest, SaveCommentResponse,
+    BatchGetRepliesCountRequest, BatchGetRepliesCountResponse, BatchGetRepliesRequest,
+    BatchGetRepliesResponse, DeleteCommentRequest, DeleteCommentResponse, GetCommentsRequest,
+    GetCommentsResponse, GetMoreCommentsRequest, GetMoreCommentsResponse, SaveCommentRequest,
+    SaveCommentResponse,
 };
 use crate::repository::CommentRepo;
 use tonic::{async_trait, Request, Response, Status};
@@ -25,11 +26,11 @@ impl CommentSrv {
 
 #[async_trait]
 impl CommentService for CommentSrv {
-    async fn batch_get_replies(
+    async fn batch_get_replies_count(
         &self,
-        request: Request<BatchGetRepliesRequest>,
-    ) -> Result<Response<BatchGetRepliesResponse>, Status> {
-        self.batch_get_replies(request.into_inner()).await
+        request: Request<BatchGetRepliesCountRequest>,
+    ) -> Result<Response<BatchGetRepliesCountResponse>, Status> {
+        self.batch_get_replies_count(request.into_inner()).await
     }
 
     async fn save_comment(
@@ -51,6 +52,13 @@ impl CommentService for CommentSrv {
         request: Request<DeleteCommentRequest>,
     ) -> Result<Response<DeleteCommentResponse>, Status> {
         todo!()
+    }
+
+    async fn batch_get_replies(
+        &self,
+        request: Request<BatchGetRepliesRequest>,
+    ) -> Result<Response<BatchGetRepliesResponse>, Status> {
+        self.batch_get_replies(request.into_inner()).await
     }
 
     async fn get_more_comments(

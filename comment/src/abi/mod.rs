@@ -1,13 +1,34 @@
 use crate::model::CommentBiz;
 use crate::pb::comment;
 use crate::pb::comment::{
-    GetCommentsRequest, GetCommentsResponse, ListOfComment, SaveCommentRequest,
+    BatchGetRepliesCountResponse, GetCommentsRequest, GetCommentsResponse, ListOfComment,
+    SaveCommentRequest,
 };
 use crate::{comment_to_pb, CommentSrv};
 use comment::{BatchGetRepliesResponse, SaveCommentResponse};
 use tonic::{Response, Status};
 
 impl CommentSrv {
+    pub async fn batch_get_replies_count(
+        &self,
+        req: comment::BatchGetRepliesCountRequest,
+    ) -> Result<Response<BatchGetRepliesCountResponse>, Status> {
+        let ret = self.comment_repo.batch_get_replies_count(req.ids).await;
+
+        match ret {
+            Ok(replies_count) => {
+                let replies_count = replies_count
+                    .into_iter()
+                    .map(|(id, count)| (id, count as i64))
+                    .collect();
+                Ok(Response::new(BatchGetRepliesCountResponse {
+                    replies_count,
+                }))
+            }
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
     pub async fn batch_get_replies(
         &self,
         req: comment::BatchGetRepliesRequest,

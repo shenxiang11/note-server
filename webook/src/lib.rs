@@ -1,5 +1,6 @@
 use crate::config::AppConfig;
 use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
+use crate::data_loader::replies_count_loader::RepliesCountLoader;
 use crate::model::note::PublishedNoteViewsLoader;
 use crate::mutation::MutationRoot;
 use crate::query::QueryRoot;
@@ -64,6 +65,10 @@ pub async fn start_server(
     ))
     .data(DataLoader::new(
         PublishedNoteViewsLoader::new(app_state.interactive_srv.clone()),
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        RepliesCountLoader::new(app_state.comment_srv.clone()),
         tokio::spawn,
     ))
     .data(app_state.clone())

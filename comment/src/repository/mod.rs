@@ -1,6 +1,6 @@
 use crate::model::{Comment, CommentBiz};
 use anyhow::Result;
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -33,6 +33,29 @@ impl CommentRepo {
                 db_read,
             }),
         }
+    }
+
+    pub async fn batch_get_replies_count(&self, biz_ids: Vec<i64>) -> Result<HashMap<i64, i64>> {
+        let counts: HashMap<i64, i64> = sqlx::query(
+            r#"
+            SELECT root_id, COUNT(*)
+            FROM comments
+            WHERE root_id = ANY($1)
+            GROUP BY root_id
+            "#,
+        )
+        .bind(&biz_ids)
+        .fetch_all(&self.db_read)
+        .await?
+        .iter()
+        .map(|row| {
+            let biz_id: i64 = row.get("root_id");
+            let count: i64 = row.get("count");
+            (biz_id, count)
+        })
+        .collect();
+
+        Ok(counts)
     }
 
     pub async fn batch_get_replies(&self, biz_ids: Vec<i64>) -> Result<HashMap<i64, Vec<Comment>>> {
