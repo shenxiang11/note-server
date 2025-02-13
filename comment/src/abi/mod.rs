@@ -6,6 +6,7 @@ use crate::pb::comment::{
 };
 use crate::{comment_to_pb, CommentSrv};
 use comment::{BatchGetRepliesResponse, SaveCommentResponse};
+use std::collections::HashMap;
 use tonic::{Response, Status};
 
 impl CommentSrv {
@@ -105,5 +106,17 @@ impl CommentSrv {
             }
             Err(e) => Err(Status::internal(e.to_string())),
         }
+    }
+
+    pub async fn batch_get_note_comments_count(
+        &self,
+        req: comment::BatchGetNoteCommentsCountRequest,
+    ) -> Result<Response<comment::BatchGetNoteCommentsCountResponse>, Status> {
+        let mut hm = HashMap::new();
+        hm.insert(9, 2);
+        Ok(Response::new(comment::BatchGetNoteCommentsCountResponse {
+            note_comments_count: hm,
+        }))
+        // todo!()
     }
 }

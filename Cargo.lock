@@ -1953,9 +1953,11 @@ name = "note"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-graphql",
  "chrono",
  "kafka",
  "prost",
+ "prost-types",
  "serde",
  "serde_json",
  "sqlx",
@@ -3944,6 +3946,7 @@ dependencies = [
  "jsonwebtoken",
  "kafka",
  "lettre",
+ "note",
  "prost-types",
  "rand",
  "redis",

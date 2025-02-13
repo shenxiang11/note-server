@@ -3,8 +3,8 @@ use crate::util::time::PbTimestamp;
 use anyhow::Result;
 use comment::pb::comment::comment_service_client::CommentServiceClient;
 use comment::pb::comment::{
-    BatchGetRepliesCountRequest, BatchGetRepliesRequest, CommentBiz, GetCommentsRequest,
-    SaveCommentRequest,
+    BatchGetNoteCommentsCountRequest, BatchGetRepliesCountRequest, BatchGetRepliesRequest,
+    CommentBiz, GetCommentsRequest, SaveCommentRequest,
 };
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -48,6 +48,19 @@ impl CommentSrv {
         }
 
         Ok(result)
+    }
+
+    pub async fn batch_get_note_comments_count(
+        &self,
+        note_ids: Vec<i64>,
+    ) -> Result<HashMap<i64, i64>> {
+        let mut client = self.client.clone();
+        let ret = client
+            .batch_get_note_comments_count(BatchGetNoteCommentsCountRequest { note_ids })
+            .await?
+            .into_inner();
+
+        Ok(ret.note_comments_count)
     }
 
     pub async fn batch_get_replies(&self, biz_ids: Vec<i64>) -> Result<HashMap<i64, Vec<Comment>>> {

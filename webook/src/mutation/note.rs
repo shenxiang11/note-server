@@ -1,4 +1,4 @@
-use crate::model::note::{Note, NoteStatus};
+use crate::dto::note::NoteStatus;
 use crate::util::AuthGuard;
 use crate::AppState;
 use async_graphql::{Context, InputObject, Object};
@@ -11,17 +11,38 @@ pub(crate) struct NoteMutation;
 #[Object]
 impl NoteMutation {
     #[graphql(guard = "AuthGuard")]
-    pub async fn edit_note(
+    pub async fn create_note(
         &self,
         ctx: &Context<'_>,
         input: EditNoteInput,
-    ) -> async_graphql::Result<Note> {
+    ) -> async_graphql::Result<String> {
         let state = ctx.data::<AppState>()?;
         let user_id = ctx.data::<i64>()?;
 
-        let note = state.note_srv.upsert(*user_id, input).await?;
+        let _ = state
+            .note_srv
+            .create_or_update(*user_id, None, input)
+            .await?;
 
-        Ok(note)
+        Ok("".to_string())
+    }
+
+    #[graphql(guard = "AuthGuard")]
+    pub async fn edit_note(
+        &self,
+        ctx: &Context<'_>,
+        note_id: i64,
+        input: EditNoteInput,
+    ) -> async_graphql::Result<String> {
+        let state = ctx.data::<AppState>()?;
+        let user_id = ctx.data::<i64>()?;
+
+        let _ = state
+            .note_srv
+            .create_or_update(*user_id, Some(note_id), input)
+            .await?;
+
+        Ok("".to_string())
     }
 
     #[graphql(guard = "AuthGuard")]
@@ -51,7 +72,6 @@ impl NoteMutation {
 
 #[derive(Debug, Clone, Deserialize, Serialize, InputObject)]
 pub struct EditNoteInput {
-    pub id: Option<i64>,
     pub title: Option<String>,
     pub content: Option<String>,
     pub images: Option<Vec<String>>,

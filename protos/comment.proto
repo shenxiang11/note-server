@@ -10,6 +10,7 @@ service CommentService {
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
   rpc BatchGetReplies(BatchGetRepliesRequest) returns (BatchGetRepliesResponse);
   rpc BatchGetRepliesCount(BatchGetRepliesCountRequest) returns (BatchGetRepliesCountResponse);
+  rpc BatchGetNoteCommentsCount(BatchGetNoteCommentsCountRequest) returns (BatchGetNoteCommentsCountResponse);
   rpc GetMoreComments(GetMoreCommentsRequest) returns (GetMoreCommentsResponse);
 }
 
@@ -73,6 +74,14 @@ message Comment {
   optional int64 parent_id = 7;
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
+}
+
+message BatchGetNoteCommentsCountRequest {
+  repeated int64 note_ids = 1;
+}
+
+message BatchGetNoteCommentsCountResponse {
+  map<int64, int64> note_comments_count = 1;
 }
 
 message DeleteCommentRequest {

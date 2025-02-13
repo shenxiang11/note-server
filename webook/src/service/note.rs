@@ -1,146 +1,107 @@
-use crate::model::note::{Note, NoteStatus, NoteType, PublishedNote};
+use crate::dto::note::{Note, NoteType};
 use crate::mutation::note::EditNoteInput;
+use crate::util::time::PbTimestamp;
 use anyhow::Result;
-use sqlx::PgPool;
+use note::pb::note::get_published_note_response::Note::{NormalNote, VideoNote};
+use note::pb::note::note_service_client::NoteServiceClient;
+use note::pb::note::CreateOrUpdateRequest;
+use note::pb::note::ImageList;
+use std::ops::Deref;
+use std::sync::Arc;
+use tonic::transport::Channel;
 
 pub struct NoteSrv {
-    biz: String,
-    db: PgPool,
-    db_read: PgPool,
+    inner: Arc<NoteSrvInner>,
+}
+
+impl Deref for NoteSrv {
+    type Target = NoteSrvInner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+pub struct NoteSrvInner {
+    client: NoteServiceClient<Channel>,
 }
 
 impl NoteSrv {
-    pub fn new(db: PgPool, db_read: PgPool) -> Self {
+    pub fn new(client: NoteServiceClient<Channel>) -> Self {
         Self {
-            biz: "note".to_string(),
-            db,
-            db_read,
+            inner: Arc::new(NoteSrvInner { client }),
         }
     }
 
-    pub async fn get_published_note_by_id(&self, id: i64) -> Result<PublishedNote> {
-        let result: PublishedNote = sqlx::query_as(
-            r#"
-            SELECT * FROM published_notes WHERE id = $1;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(&self.db_read)
-        .await?;
+    pub async fn get_published_note_by_id(&self, id: i64) -> Result<Note> {
+        let mut client = self.client.clone();
+        let request = tonic::Request::new(note::pb::note::GetPublishedNoteRequest { id });
+        let response = client.get_published_note(request).await?;
+        let response = response.into_inner();
+        let note = response.note;
 
-        Ok(result)
+        match note {
+            Some(NormalNote(note)) => Ok(Note {
+                id: note.id,
+                title: note.title,
+                content: note.content,
+                images: note.images.unwrap_or_default().images,
+                video: "".to_string(),
+                status: note.status.into(),
+                user_id: note.user_id,
+                created_at: PbTimestamp::from(note.created_at.unwrap_or_default()).into(),
+                updated_at: PbTimestamp::from(note.updated_at.unwrap_or_default()).into(),
+                r#type: NoteType::Normal,
+            }),
+            Some(VideoNote(note)) => Ok(Note {
+                id: note.id,
+                title: note.title,
+                content: note.content,
+                images: vec![],
+                video: note.video,
+                status: note.status.into(),
+                user_id: note.user_id,
+                created_at: PbTimestamp::from(note.created_at.unwrap_or_default()).into(),
+                updated_at: PbTimestamp::from(note.updated_at.unwrap_or_default()).into(),
+                r#type: NoteType::Video,
+            }),
+            _ => unimplemented!(),
+        }
     }
 
-    pub async fn get_published_notes(&self) -> Result<Vec<PublishedNote>> {
-        let result: Vec<PublishedNote> = sqlx::query_as(
-            r#"
-            SELECT * FROM published_notes;
-            "#,
-        )
-        .fetch_all(&self.db_read)
-        .await?;
-
-        Ok(result)
+    pub async fn get_published_notes(&self) -> Result<Vec<Note>> {
+        unimplemented!()
     }
 
     pub async fn upsert(&self, user_id: i64, input: EditNoteInput) -> Result<Note> {
-        let id = input.id;
-        let title = input.title;
-        let content = input.content;
-        let images = input.images;
-        let video = input.video;
-        let status = input.status;
+        unimplemented!()
+    }
 
-        let note_type = if video.is_some() {
-            NoteType::Video
-        } else {
-            NoteType::Normal
-        };
-
-        if let Some(id) = id {
-            let result: Note = sqlx::query_as(
-                r#"
-                UPDATE notes
-                SET title = COALESCE($1, title), content = COALESCE($2, content), images = COALESCE($3, images), video = COALESCE($4, video), status = COALESCE($7, status), updated_at = now()
-                WHERE id = $5 AND user_id = $6
-                RETURNING *;
-            "#,
-            )
-            .bind(title)
-            .bind(content)
-            .bind(images)
-            .bind(video)
-            .bind(id)
-            .bind(user_id)
-            .bind(status)
-            .fetch_one(&self.db)
-            .await?;
-
-            let r = result.clone();
-
-            if result.status == NoteStatus::Published {
-                // 更新 published_notes 表，如果不存在则插入
-                sqlx::query(
-                    r#"
-                    INSERT INTO published_notes (id, user_id, title, content, images, video)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                    ON CONFLICT (id)
-                    DO UPDATE SET title = $3, content = $4, images = $5, video = $6;
-                "#,
-                )
-                .bind(result.id)
-                .bind(result.user_id)
-                .bind(result.title)
-                .bind(result.content)
-                .bind(result.images)
-                .bind(result.video)
-                .execute(&self.db)
-                .await?;
-            }
-
-            Ok(r)
-        } else {
-            if title.is_none() {
-                return Err(anyhow::anyhow!("title is required"));
-            }
-
-            let result: Note = sqlx::query_as(
-                r#"
-                INSERT INTO notes (user_id, type, title, content, images, video, status)
-                VALUES ($1, $2, $3, COALESCE($4, null), $5, $6, COALESCE($7, 'draft'))
-                RETURNING *;
-            "#,
-            )
-            .bind(user_id)
-            .bind(note_type)
-            .bind(title)
-            .bind(content)
-            .bind(images.unwrap_or_default())
-            .bind(video)
-            .bind(status)
-            .fetch_one(&self.db)
-            .await?;
-
-            let r = result.clone();
-            // 发布的话，插入到 published_notes 表
-            if result.status == NoteStatus::Published {
-                sqlx::query(
-                    r#"
-                    INSERT INTO published_notes (id, user_id, title, content, images, video)
-                    VALUES ($1, $2, $3, $4, $5, $6);
-                "#,
-                )
-                .bind(result.id)
-                .bind(result.user_id)
-                .bind(result.title)
-                .bind(result.content)
-                .bind(result.images)
-                .bind(result.video)
-                .execute(&self.db)
-                .await?;
-            }
-
-            Ok(r)
-        }
+    pub async fn create_or_update(
+        &self,
+        user_id: i64,
+        note_id: Option<i64>,
+        input: EditNoteInput,
+    ) -> Result<()> {
+        let mut client = self.client.clone();
+        let request = tonic::Request::new(CreateOrUpdateRequest {
+            user_id,
+            id: note_id,
+            title: input.title,
+            content: input.content,
+            images: if let Some(images) = input.images {
+                Some(ImageList { images })
+            } else {
+                None
+            },
+            video: input.video,
+            status: if let Some(status) = input.status {
+                Some(status as i32)
+            } else {
+                None
+            },
+        });
+        client.create_or_update(request).await?;
+        Ok(())
     }
 }

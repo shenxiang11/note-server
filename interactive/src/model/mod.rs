@@ -39,8 +39,8 @@ pub struct Counter {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteReadMessage {
-    pub(crate) biz_id: i64,
-    pub(crate) user_id: Option<i64>,
+    pub biz_id: i64,
+    pub user_id: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, sqlx::Type, Copy, Eq)]

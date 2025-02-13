@@ -1,5 +1,8 @@
 use crate::pb::note::note_service_server::NoteService;
-use crate::pb::note::{CreateOrUpdateRequest, CreateOrUpdateResponse};
+use crate::pb::note::{
+    CreateOrUpdateRequest, CreateOrUpdateResponse, GetPublishedNoteRequest,
+    GetPublishedNoteResponse,
+};
 use crate::repository::NoteRepo;
 use tonic::{async_trait, Request, Response, Status};
 
@@ -26,5 +29,12 @@ impl NoteService for NoteSrv {
         request: Request<CreateOrUpdateRequest>,
     ) -> Result<Response<CreateOrUpdateResponse>, Status> {
         self.create_or_update(request.into_inner()).await
+    }
+
+    async fn get_published_note(
+        &self,
+        request: Request<GetPublishedNoteRequest>,
+    ) -> Result<Response<GetPublishedNoteResponse>, Status> {
+        self.get_published_note(request.into_inner()).await
     }
 }

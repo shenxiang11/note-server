@@ -9,7 +9,7 @@ use tonic::{async_trait, IntoRequest, Request, Response, Status};
 mod abi;
 pub mod config;
 pub mod consumer;
-mod model;
+pub mod model;
 pub mod pb;
 pub mod repository;
 

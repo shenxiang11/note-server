@@ -1,6 +1,7 @@
-use crate::model::note::PublishedNote;
+use crate::dto::note::Note;
 use crate::AppState;
 use async_graphql::{Context, Object, Result};
+use interactive::model::NoteReadMessage;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, error};
 
@@ -9,13 +10,13 @@ pub(crate) struct NoteQuery;
 
 #[Object]
 impl NoteQuery {
-    pub async fn published_notes(&self, ctx: &Context<'_>) -> Result<Vec<PublishedNote>> {
+    pub async fn published_notes(&self, ctx: &Context<'_>) -> Result<Vec<Note>> {
         let state = ctx.data::<AppState>()?;
         let notes = state.note_srv.get_published_notes().await?;
         Ok(notes)
     }
 
-    pub async fn published_note(&self, ctx: &Context<'_>, id: i64) -> Result<PublishedNote> {
+    pub async fn published_note(&self, ctx: &Context<'_>, id: i64) -> Result<Note> {
         let state = ctx.data::<AppState>()?;
         let user_id = ctx.data::<i64>();
         let note = state.note_srv.get_published_note_by_id(id).await?;
@@ -49,11 +50,4 @@ impl NoteQuery {
 
         Ok(note)
     }
-}
-
-// FIXME: 重复的结构
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NoteReadMessage {
-    pub(crate) biz_id: i64,
-    pub(crate) user_id: Option<i64>,
 }

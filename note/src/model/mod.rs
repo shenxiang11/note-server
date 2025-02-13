@@ -1,8 +1,11 @@
+use async_graphql::Enum;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, sqlx::Type, Copy, Eq)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, sqlx::Type, Copy, Eq, Enum,
+)]
 #[sqlx(type_name = "note_type", rename_all = "snake_case")]
 #[serde(rename_all(serialize = "camelCase", deserialize = "camelCase"))]
 pub enum NoteType {
@@ -14,8 +17,8 @@ pub enum NoteType {
 #[sqlx(type_name = "note_status", rename_all = "snake_case")]
 #[serde(rename_all(serialize = "camelCase", deserialize = "camelCase"))]
 pub enum NoteStatus {
-    Draft,
-    Published,
+    Draft = 1,
+    Published = 2,
 }
 
 impl TryFrom<i32> for NoteStatus {
@@ -34,8 +37,8 @@ impl TryFrom<i32> for NoteStatus {
 #[sqlx(type_name = "published_note_status", rename_all = "snake_case")]
 #[serde(rename_all(serialize = "camelCase", deserialize = "camelCase"))]
 pub enum PublishedNoteStatus {
-    Published,
-    Hidden,
+    Hidden = 1,
+    Published = 2,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, PartialEq)]

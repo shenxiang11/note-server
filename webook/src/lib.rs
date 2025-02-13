@@ -1,7 +1,8 @@
 use crate::config::AppConfig;
 use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
+use crate::data_loader::note_comments_count_loader::NoteCommentsCountLoader;
+use crate::data_loader::note_views_loader::NoteViewsLoader;
 use crate::data_loader::replies_count_loader::RepliesCountLoader;
-use crate::model::note::PublishedNoteViewsLoader;
 use crate::mutation::MutationRoot;
 use crate::query::QueryRoot;
 use crate::service::comment::CommentSrv;
@@ -25,6 +26,7 @@ use comment::pb::comment::comment_service_client::CommentServiceClient;
 use deadpool::Runtime;
 use deadpool_redis::Config;
 use interactive::pb::interactive_service_client::InteractiveServiceClient;
+use note::pb::note::note_service_client::NoteServiceClient;
 use sqlx::PgPool;
 use std::net::SocketAddr;
 use std::ops::Deref;
@@ -64,11 +66,15 @@ pub async fn start_server(
         tokio::spawn,
     ))
     .data(DataLoader::new(
-        PublishedNoteViewsLoader::new(app_state.interactive_srv.clone()),
+        NoteViewsLoader::new(app_state.interactive_srv.clone()),
         tokio::spawn,
     ))
     .data(DataLoader::new(
         RepliesCountLoader::new(app_state.comment_srv.clone()),
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        NoteCommentsCountLoader::new(app_state.comment_srv.clone()),
         tokio::spawn,
     ))
     .data(app_state.clone())
@@ -225,13 +231,18 @@ impl AppState {
             .expect("Failed to connect to comment service");
         let comment_srv = CommentSrv::new(comment_client);
 
+        let note_client = NoteServiceClient::connect("http://127.0.0.1:50003")
+            .await
+            .expect("Failed to connect to note service");
+        let note_srv = NoteSrv::new(note_client);
+
         Self {
             inner: Arc::new(AppStateInner {
                 app_config,
                 message_queue,
                 jwt_handler,
                 user_srv: UserSrv::new(db.clone(), db_read.clone(), rdb),
-                note_srv: NoteSrv::new(db.clone(), db_read.clone()),
+                note_srv,
                 interactive_srv,
                 comment_srv,
             }),

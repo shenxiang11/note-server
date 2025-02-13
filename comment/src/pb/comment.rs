@@ -81,6 +81,16 @@ pub struct Comment {
     #[prost(message, optional, tag = "9")]
     pub updated_at: ::core::option::Option<::prost_types::Timestamp>,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetNoteCommentsCountRequest {
+    #[prost(int64, repeated, tag = "1")]
+    pub note_ids: ::prost::alloc::vec::Vec<i64>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetNoteCommentsCountResponse {
+    #[prost(map = "int64, int64", tag = "1")]
+    pub note_comments_count: ::std::collections::HashMap<i64, i64>,
+}
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeleteCommentRequest {
     #[prost(int64, tag = "1")]
@@ -343,6 +353,35 @@ pub mod comment_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        pub async fn batch_get_note_comments_count(
+            &mut self,
+            request: impl tonic::IntoRequest<super::BatchGetNoteCommentsCountRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetNoteCommentsCountResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/comment.CommentService/BatchGetNoteCommentsCount",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "comment.CommentService",
+                        "BatchGetNoteCommentsCount",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn get_more_comments(
             &mut self,
             request: impl tonic::IntoRequest<super::GetMoreCommentsRequest>,
@@ -415,6 +454,13 @@ pub mod comment_service_server {
             request: tonic::Request<super::BatchGetRepliesCountRequest>,
         ) -> std::result::Result<
             tonic::Response<super::BatchGetRepliesCountResponse>,
+            tonic::Status,
+        >;
+        async fn batch_get_note_comments_count(
+            &self,
+            request: tonic::Request<super::BatchGetNoteCommentsCountRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetNoteCommentsCountResponse>,
             tonic::Status,
         >;
         async fn get_more_comments(
@@ -716,6 +762,58 @@ pub mod comment_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = BatchGetRepliesCountSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/comment.CommentService/BatchGetNoteCommentsCount" => {
+                    #[allow(non_camel_case_types)]
+                    struct BatchGetNoteCommentsCountSvc<T: CommentService>(pub Arc<T>);
+                    impl<
+                        T: CommentService,
+                    > tonic::server::UnaryService<
+                        super::BatchGetNoteCommentsCountRequest,
+                    > for BatchGetNoteCommentsCountSvc<T> {
+                        type Response = super::BatchGetNoteCommentsCountResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::BatchGetNoteCommentsCountRequest,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as CommentService>::batch_get_note_comments_count(
+                                        &inner,
+                                        request,
+                                    )
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = BatchGetNoteCommentsCountSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

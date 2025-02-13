@@ -1,5 +1,6 @@
 use crate::pb::comment::comment_service_server::CommentService;
 use crate::pb::comment::{
+    BatchGetNoteCommentsCountRequest, BatchGetNoteCommentsCountResponse,
     BatchGetRepliesCountRequest, BatchGetRepliesCountResponse, BatchGetRepliesRequest,
     BatchGetRepliesResponse, DeleteCommentRequest, DeleteCommentResponse, GetCommentsRequest,
     GetCommentsResponse, GetMoreCommentsRequest, GetMoreCommentsResponse, SaveCommentRequest,
@@ -26,13 +27,6 @@ impl CommentSrv {
 
 #[async_trait]
 impl CommentService for CommentSrv {
-    async fn batch_get_replies_count(
-        &self,
-        request: Request<BatchGetRepliesCountRequest>,
-    ) -> Result<Response<BatchGetRepliesCountResponse>, Status> {
-        self.batch_get_replies_count(request.into_inner()).await
-    }
-
     async fn save_comment(
         &self,
         request: Request<SaveCommentRequest>,
@@ -59,6 +53,21 @@ impl CommentService for CommentSrv {
         request: Request<BatchGetRepliesRequest>,
     ) -> Result<Response<BatchGetRepliesResponse>, Status> {
         self.batch_get_replies(request.into_inner()).await
+    }
+
+    async fn batch_get_replies_count(
+        &self,
+        request: Request<BatchGetRepliesCountRequest>,
+    ) -> Result<Response<BatchGetRepliesCountResponse>, Status> {
+        self.batch_get_replies_count(request.into_inner()).await
+    }
+
+    async fn batch_get_note_comments_count(
+        &self,
+        request: Request<BatchGetNoteCommentsCountRequest>,
+    ) -> Result<Response<BatchGetNoteCommentsCountResponse>, Status> {
+        self.batch_get_note_comments_count(request.into_inner())
+            .await
     }
 
     async fn get_more_comments(

@@ -38,6 +38,7 @@ prost = { version = "0.13.4" }
 interactive = { path = "./interactive" }
 im = { path = "./im" }
 comment = { path = "./comment" }
+note = { path = "./note" }
 reqwest = { version = "0.12.12", features = ["json"] }
 prost-types = { version = "0.13.4" }
 derive_more = { version = "2.0.1", features = ["into", "from"] }

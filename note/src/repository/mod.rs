@@ -98,7 +98,6 @@ impl NoteRepo {
                 .execute(&self.db)
                 .await?;
             }
-
             Ok(r)
         } else {
             if title.is_none() {

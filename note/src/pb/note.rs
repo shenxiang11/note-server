@@ -23,6 +23,64 @@ pub struct CreateOrUpdateRequest {
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct CreateOrUpdateResponse {}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct GetPublishedNoteRequest {
+    #[prost(int64, tag = "1")]
+    pub id: i64,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetPublishedNoteResponse {
+    #[prost(oneof = "get_published_note_response::Note", tags = "1, 2")]
+    pub note: ::core::option::Option<get_published_note_response::Note>,
+}
+/// Nested message and enum types in `GetPublishedNoteResponse`.
+pub mod get_published_note_response {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Note {
+        #[prost(message, tag = "1")]
+        NormalNote(super::NormalNote),
+        #[prost(message, tag = "2")]
+        VideoNote(super::VideoNote),
+    }
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct NormalNote {
+    #[prost(int64, tag = "1")]
+    pub id: i64,
+    #[prost(string, tag = "2")]
+    pub title: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub content: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "4")]
+    pub images: ::core::option::Option<ImageList>,
+    #[prost(enumeration = "NoteStatus", tag = "5")]
+    pub status: i32,
+    #[prost(int64, tag = "6")]
+    pub user_id: i64,
+    #[prost(message, optional, tag = "7")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "8")]
+    pub updated_at: ::core::option::Option<::prost_types::Timestamp>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VideoNote {
+    #[prost(int64, tag = "1")]
+    pub id: i64,
+    #[prost(string, tag = "2")]
+    pub title: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub content: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub video: ::prost::alloc::string::String,
+    #[prost(enumeration = "NoteStatus", tag = "5")]
+    pub status: i32,
+    #[prost(int64, tag = "6")]
+    pub user_id: i64,
+    #[prost(message, optional, tag = "7")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "8")]
+    pub updated_at: ::core::option::Option<::prost_types::Timestamp>,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum NoteStatus {
@@ -167,6 +225,30 @@ pub mod note_service_client {
                 .insert(GrpcMethod::new("note.NoteService", "CreateOrUpdate"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn get_published_note(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetPublishedNoteRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetPublishedNoteResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/note.NoteService/GetPublishedNote",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("note.NoteService", "GetPublishedNote"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -187,6 +269,13 @@ pub mod note_service_server {
             request: tonic::Request<super::CreateOrUpdateRequest>,
         ) -> std::result::Result<
             tonic::Response<super::CreateOrUpdateResponse>,
+            tonic::Status,
+        >;
+        async fn get_published_note(
+            &self,
+            request: tonic::Request<super::GetPublishedNoteRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetPublishedNoteResponse>,
             tonic::Status,
         >;
     }
@@ -296,6 +385,52 @@ pub mod note_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = CreateOrUpdateSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/note.NoteService/GetPublishedNote" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetPublishedNoteSvc<T: NoteService>(pub Arc<T>);
+                    impl<
+                        T: NoteService,
+                    > tonic::server::UnaryService<super::GetPublishedNoteRequest>
+                    for GetPublishedNoteSvc<T> {
+                        type Response = super::GetPublishedNoteResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetPublishedNoteRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as NoteService>::get_published_note(&inner, request)
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = GetPublishedNoteSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

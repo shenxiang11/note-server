@@ -2,8 +2,11 @@ syntax = "proto3";
 
 package note;
 
+import "google/protobuf/timestamp.proto";
+
 service NoteService {
   rpc CreateOrUpdate(CreateOrUpdateRequest) returns (CreateOrUpdateResponse);
+  rpc GetPublishedNote(GetPublishedNoteRequest) returns (GetPublishedNoteResponse);
 }
 
 enum NoteStatus {
@@ -27,3 +30,36 @@ message CreateOrUpdateRequest {
 }
 
 message CreateOrUpdateResponse {}
+
+message GetPublishedNoteRequest {
+  int64 id = 1;
+}
+
+message GetPublishedNoteResponse {
+  oneof note {
+    NormalNote normal_note = 1;
+    VideoNote video_note = 2;
+  }
+}
+
+message NormalNote {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  ImageList images = 4;
+  NoteStatus status = 5;
+  int64 user_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message VideoNote {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  string video = 4;
+  NoteStatus status = 5;
+  int64 user_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}

@@ -38,6 +38,7 @@ tonic = { workspace = true }
 im = { workspace = true }
 prost-types = { workspace = true }
 derive_more = { workspace = true }
+note = { workspace = true }
 
 [build-dependencies]
 anyhow = { workspace = true }
