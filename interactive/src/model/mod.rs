@@ -43,6 +43,12 @@ pub struct NoteReadMessage {
     pub user_id: Option<i64>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NoteCommentMessage {
+    pub biz_id: i64,
+    pub user_id: i64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, sqlx::Type, Copy, Eq)]
 #[sqlx(type_name = "history_biz", rename_all = "snake_case")]
 #[serde(rename_all(serialize = "camelCase", deserialize = "camelCase"))]

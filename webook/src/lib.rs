@@ -74,7 +74,10 @@ pub async fn start_server(
         tokio::spawn,
     ))
     .data(DataLoader::new(
-        NoteCommentsCountLoader::new(app_state.comment_srv.clone()),
+        NoteCommentsCountLoader::new(
+            app_state.comment_srv.clone(),
+            app_state.interactive_srv.clone(),
+        ),
         tokio::spawn,
     ))
     .data(app_state.clone())

@@ -1,5 +1,6 @@
 use anyhow::Result;
 use interactive::config::AppConfig;
+use interactive::consumer::note_comment_consumer::NoteCommentConsumer;
 use interactive::consumer::note_read_consumer::NoteReadConsumer;
 use interactive::pb::interactive_service_server::InteractiveServiceServer;
 use interactive::repository::InteractiveRepo;
@@ -27,15 +28,24 @@ async fn main() -> Result<()> {
         .await
         .expect("Failed to create pg pool");
 
-    let interactive_repo = InteractiveRepo::new(db, db_read);
-
+    let interactive_repo = InteractiveRepo::new(db.clone(), db_read.clone());
     let interactive_srv = InteractiveSrv::new(interactive_repo.clone());
-
     let cfg = app_config.clone();
     tokio::spawn(async move {
         let note_read_consumer = NoteReadConsumer::new(cfg.kafka.brokers.clone(), interactive_repo);
         if let Err(e) = note_read_consumer.consume() {
             debug!("failed to consume note read message: {}", e);
+        }
+    });
+
+    let interactive_repo = InteractiveRepo::new(db, db_read);
+    let interactive_srv = InteractiveSrv::new(interactive_repo.clone());
+    let cfg = app_config.clone();
+    tokio::spawn(async move {
+        let note_comment_consumer =
+            NoteCommentConsumer::new(cfg.kafka.brokers.clone(), interactive_repo.clone());
+        if let Err(e) = note_comment_consumer.consume() {
+            debug!("failed to consume note comment message: {}", e);
         }
     });
 

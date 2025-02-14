@@ -1,5 +1,5 @@
 local body = [[
-    {"query":"query Note($id: Int!) {\n    result: publishedNote(id: $id) {\n        id\n        title\n        content\n        type\n        images\n        video\n        updatedAt\n        views\n    }\n}","variables":{"id":10}}
+    {"query":"query Note($id: Int!) {\n    result: publishedNote(id: $id) {\n        id\n        title\n        content\n        type\n        images\n        video\n        updatedAt\n        views\n    }\n}","variables":{"id":9}}
 ]]
 
 local headers = {
