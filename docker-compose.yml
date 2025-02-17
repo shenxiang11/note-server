@@ -84,7 +84,7 @@ services:
       <<: *common-config
       KAFKA_CFG_BROKER_ID: 1
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9092
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.9:9092 #宿主机IP
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.8:9092 #宿主机IP
     volumes:
       - ./kafka_data/kafka-1:/bitnami/kafka
 
@@ -97,7 +97,7 @@ services:
       <<: *common-config
       KAFKA_CFG_BROKER_ID: 2
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.9:9093 #宿主机IP
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.8:9093 #宿主机IP
     volumes:
       - ./kafka_data/kafka-2:/bitnami/kafka
 
@@ -110,7 +110,7 @@ services:
       <<: *common-config
       KAFKA_CFG_BROKER_ID: 3
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9094
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.9:9094 #宿主机IP
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.8:9094 #宿主机IP
     volumes:
       - ./kafka_data/kafka-3:/bitnami/kafka
 
@@ -125,7 +125,7 @@ services:
       KAFKA_CFG_BROKER_ID: 4
       KAFKA_CFG_PROCESS_ROLES: broker
       KAFKA_CFG_LISTENERS: BROKER://:9095
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.9:9095
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://192.168.1.8:9095
     volumes:
       - ./kafka_data/kafka-4:/bitnami/kafka
 

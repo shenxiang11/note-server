@@ -1,5 +1,5 @@
 [workspace]
-members = ["comment", "im", "interactive", "note", "webook"]
+members = ["comment", "im", "interactive", "note", "user", "bff"]
 resolver = "2"
 
 [workspace.dependencies]
