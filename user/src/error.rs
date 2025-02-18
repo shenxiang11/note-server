@@ -28,8 +28,18 @@ pub enum UserServiceError {
 
 impl From<UserServiceError> for Status {
     fn from(err: UserServiceError) -> Self {
-        match err {
-            _ => Status::internal(err.to_string()),
-        }
+        let mut error_code = 0;
+        let mut status = match err {
+            _ => {
+                error_code = 10000;
+                Status::internal(err.to_string())
+            }
+        };
+
+        status
+            .metadata_mut()
+            .insert("error_code", error_code.into());
+
+        status
     }
 }

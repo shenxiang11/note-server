@@ -36,6 +36,7 @@ use tower::ServiceBuilder;
 use tower_http::request_id::{
     MakeRequestId, MakeRequestUuid, PropagateRequestIdLayer, RequestId, SetRequestIdLayer,
 };
+use user::pb::user::user_service_client::UserServiceClient;
 use uuid::Uuid;
 
 mod app_error;
@@ -239,12 +240,17 @@ impl AppState {
             .expect("Failed to connect to note service");
         let note_srv = NoteSrv::new(note_client);
 
+        let user_service = UserServiceClient::connect("http://127.0.0.1:50004")
+            .await
+            .expect("Failed to connect to user service");
+        let user_srv = UserSrv::new(user_service);
+
         Self {
             inner: Arc::new(AppStateInner {
                 app_config,
                 message_queue,
                 jwt_handler,
-                user_srv: UserSrv::new(db.clone(), db_read.clone(), rdb),
+                user_srv,
                 note_srv,
                 interactive_srv,
                 comment_srv,

@@ -452,6 +452,7 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "user",
  "uuid",
 ]
 

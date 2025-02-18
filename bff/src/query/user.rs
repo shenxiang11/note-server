@@ -1,4 +1,4 @@
-use crate::model::user::User;
+use crate::dto::user::User;
 use crate::util::AuthGuard;
 use crate::AppState;
 use async_graphql::{Context, Object, Result};

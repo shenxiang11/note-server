@@ -39,6 +39,7 @@ im = { workspace = true }
 prost-types = { workspace = true }
 derive_more = { workspace = true }
 note = { workspace = true }
+user = { workspace = true }
 
 [build-dependencies]
 anyhow = { workspace = true }
