@@ -18,11 +18,13 @@ impl UserSrv {
     }
 
     pub async fn verify(&self, request: VerifyRequest) -> Result<Response<VerifyResponse>, Status> {
-        let _ = self
+        let user = self
             .user_repo
             .verify(&request.email, &request.password)
             .await?;
-        Ok(Response::new(VerifyResponse {}))
+        Ok(Response::new(VerifyResponse {
+            user: Some(user.into()),
+        }))
     }
 
     pub async fn create_user(
@@ -33,7 +35,9 @@ impl UserSrv {
             .user_repo
             .create_user(&request.email, &request.password, &request.code)
             .await?;
-        Ok(Response::new(CreateUserResponse {}))
+        Ok(Response::new(CreateUserResponse {
+            user: Some(user.into()),
+        }))
     }
 
     pub async fn get_user_by_id(

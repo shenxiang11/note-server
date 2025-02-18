@@ -102,7 +102,6 @@ impl UserRepo {
             .fetch_optional(&self.db)
             .await?;
 
-        // FIXME: 错误处理
         match user {
             Some(user) => {
                 if verify_password(password, &user.password_hash)? {

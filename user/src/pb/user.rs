@@ -13,8 +13,11 @@ pub struct VerifyRequest {
     #[prost(string, tag = "2")]
     pub password: ::prost::alloc::string::String,
 }
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
-pub struct VerifyResponse {}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VerifyResponse {
+    #[prost(message, optional, tag = "1")]
+    pub user: ::core::option::Option<User>,
+}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateUserRequest {
     #[prost(string, tag = "1")]
@@ -24,8 +27,11 @@ pub struct CreateUserRequest {
     #[prost(string, tag = "3")]
     pub code: ::prost::alloc::string::String,
 }
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
-pub struct CreateUserResponse {}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateUserResponse {
+    #[prost(message, optional, tag = "1")]
+    pub user: ::core::option::Option<User>,
+}
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GetUserByIdRequest {
     #[prost(int64, tag = "1")]

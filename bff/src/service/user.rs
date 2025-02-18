@@ -44,108 +44,62 @@ impl UserSrv {
         Ok(())
     }
 
-    // pub async fn signin(&self, email: &str, password: &str) -> anyhow::Result<User, AppError> {
-    //     let user: Option<User> = sqlx::query_as(
-    //         r#"
-    //         SELECT id, serial_number, fullname, email, password_hash, avatar, bio, created_at FROM users
-    //         WHERE email = $1
-    //         "#,
-    //     )
-    //         .bind(email)
-    //         .fetch_optional(&self.db)
-    //         .await?;
-    //
-    //     // FIXME: 错误处理
-    //     match user {
-    //         Some(user) => {
-    //             if verify_password(password, &user.password_hash)? {
-    //                 Ok(user)
-    //             } else {
-    //                 Err(AppError::ValidationError("password not match".to_string()))
-    //             }
-    //         }
-    //         None => Err(AppError::ValidationError("user not found".to_string())),
-    //     }
-    // }
-    //
-    // pub async fn signup(
-    //     &self,
-    //     email: &str,
-    //     password: &str,
-    //     code: &str,
-    // ) -> anyhow::Result<User, AppError> {
-    //     let user = self.get_user_by_email(email).await;
-    //     if user.is_ok() {
-    //         return Err(AppError::DuplicateKey("email already exists".to_string()));
-    //     }
-    //
-    //     let mut rdb = self.rdb.get().await?;
-    //
-    //     let lua_script = r#"
-    //         local key = KEYS[1]
-    //         local cntKey = KEYS[2]
-    //
-    //         local expectedCode = ARGV[1]
-    //
-    //         local cnt = tonumber(redis.call("get", cntKey))
-    //         local code = redis.call("get", key)
-    //
-    //         if cnt == nil or cnt <= 0 then
-    //             redis.call("del", key)
-    //             redis.call("del", cntKey)
-    //             return -1
-    //         end
-    //
-    //         if code == expectedCode then
-    //             redis.call("del", key)
-    //             redis.call("del", cntKey)
-    //             return 0
-    //         else
-    //             redis.call("decr", cntKey)
-    //             return -2
-    //         end
-    //     "#;
-    //     let lua_script = Script::new(lua_script);
-    //     let key = format!("{}:{}:{}", self.biz, "email_code", email);
-    //     let cnt_key = format!("{}:{}", key, "cnt");
-    //     let ret: RedisResult<i32> = lua_script
-    //         .key(key)
-    //         .key(cnt_key)
-    //         .arg(code)
-    //         .invoke_async(&mut rdb)
-    //         .await;
-    //
-    //     match ret {
-    //         Ok(0) => self.create_user(email, password).await,
-    //         Ok(-1) | Ok(-2) => Err(AppError::ValidationError("code not match".to_string())),
-    //         _ => Err(AppError::InternalServerError),
-    //     }
-    // }
-    //
-    // pub async fn update_profile(
-    //     &self,
-    //     id: i64,
-    //     fullname: Option<String>,
-    //     avatar: Option<String>,
-    //     bio: Option<String>,
-    // ) -> anyhow::Result<User, AppError> {
-    //     // FIXME: 确认这个是否好
-    //     let user: User = sqlx::query_as(
-    //         r#"
-    //         UPDATE users
-    //         SET fullname = COALESCE($1, fullname), avatar = COALESCE($2, avatar), bio = COALESCE($3, bio)
-    //         WHERE id = $4
-    //         RETURNING *
-    //         "#,
-    //     ).bind(fullname)
-    //         .bind(avatar)
-    //         .bind(bio)
-    //         .bind(id)
-    //         .fetch_one(&self.db).await?;
-    //
-    //     Ok(user)
-    // }
-    //
+    pub async fn create_user(
+        &self,
+        email: String,
+        password: String,
+        code: String,
+    ) -> anyhow::Result<User> {
+        let mut client = self.client.clone();
+        let resp = client
+            .create_user(user::pb::user::CreateUserRequest {
+                email,
+                password,
+                code,
+            })
+            .await?
+            .into_inner();
+
+        match resp.user {
+            Some(user) => Ok(user.into()),
+            None => Err(anyhow!("user not found")),
+        }
+    }
+
+    pub async fn verify(&self, email: String, password: String) -> anyhow::Result<User> {
+        let mut client = self.client.clone();
+        let resp = client
+            .verify(user::pb::user::VerifyRequest { email, password })
+            .await?
+            .into_inner();
+
+        match resp.user {
+            Some(user) => Ok(user.into()),
+            None => Err(anyhow!("user not found")),
+        }
+    }
+
+    pub async fn update_user(
+        &self,
+        id: i64,
+        fullname: Option<String>,
+        avatar: Option<String>,
+        bio: Option<String>,
+    ) -> anyhow::Result<()> {
+        let mut client = self.client.clone();
+        let _ = client
+            .update_user(user::pb::user::UpdateUserRequest {
+                id,
+                fullname,
+                avatar,
+                bio,
+            })
+            .await?
+            .into_inner();
+
+        Ok(())
+    }
+
     // pub async fn get_user_by_email(&self, email: &str) -> anyhow::Result<User, AppError> {
     //     let user: Option<User> = sqlx::query_as(
     //         r#"

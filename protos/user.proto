@@ -23,7 +23,9 @@ message VerifyRequest {
   string password = 2;
 }
 
-message VerifyResponse {}
+message VerifyResponse {
+  User user = 1;
+}
 
 message CreateUserRequest {
   string email = 1;
@@ -31,7 +33,9 @@ message CreateUserRequest {
   string code = 3;
 }
 
-message CreateUserResponse {}
+message CreateUserResponse {
+  User user = 1;
+}
 
 message GetUserByIdRequest {
   int64 id = 1;
