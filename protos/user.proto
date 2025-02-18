@@ -10,6 +10,7 @@ service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
   rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc BatchGetUsers(BatchGetUsersRequest) returns (BatchGetUsersResponse);
 }
 
 message SendRegisterEmailCodeRequest {
@@ -63,3 +64,10 @@ message User {
   google.protobuf.Timestamp created_at = 6;
 }
 
+message BatchGetUsersRequest {
+  repeated int64 ids = 1;
+}
+
+message BatchGetUsersResponse {
+  map<int64, User> user = 1;
+}

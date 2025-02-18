@@ -1,5 +1,6 @@
 use crate::dto::user::User;
 use anyhow::anyhow;
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
 use tonic::transport::Channel;
@@ -28,6 +29,20 @@ impl UserSrv {
         Self {
             inner: Arc::new(UserSrvInner { client }),
         }
+    }
+
+    pub async fn batch_get_users(&self, ids: Vec<i64>) -> anyhow::Result<HashMap<i64, User>> {
+        let mut client = self.client.clone();
+        let resp = client
+            .batch_get_users(user::pb::user::BatchGetUsersRequest { ids })
+            .await?
+            .into_inner();
+
+        Ok(resp
+            .user
+            .into_iter()
+            .map(|user| (user.0, user.1.into()))
+            .collect())
     }
 
     // 发送邮箱验证码

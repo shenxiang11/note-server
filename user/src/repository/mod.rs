@@ -12,6 +12,7 @@ use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use redis::{AsyncCommands, RedisResult, Script};
 use sqlx::{Error, PgPool};
+use std::collections::HashMap;
 
 pub struct UserRepo {
     biz: String,
@@ -223,6 +224,25 @@ impl UserRepo {
             Some(user) => Ok(user),
             None => Err(UserServiceError::NotExists("user not found".to_string())),
         }
+    }
+
+    pub async fn batch_get_users(
+        &self,
+        ids: Vec<i64>,
+    ) -> Result<HashMap<i64, User>, UserServiceError> {
+        let users: Vec<User> = sqlx::query_as(
+            r#"
+            SELECT id, serial_number, fullname, email, password_hash, avatar, bio, created_at FROM users
+            WHERE id = ANY($1)
+            "#,
+        )
+            .bind(ids)
+            .fetch_all(&self.db)
+            .await?;
+
+        let mut users = users.into_iter().map(|user| (user.id, user)).collect();
+
+        Ok(users)
     }
 
     async fn create_user_inner(

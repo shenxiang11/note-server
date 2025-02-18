@@ -3,6 +3,7 @@ use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
 use crate::data_loader::note_comments_count_loader::NoteCommentsCountLoader;
 use crate::data_loader::note_views_loader::NoteViewsLoader;
 use crate::data_loader::replies_count_loader::RepliesCountLoader;
+use crate::data_loader::users_loader::UsersLoader;
 use crate::mutation::MutationRoot;
 use crate::query::QueryRoot;
 use crate::service::comment::CommentSrv;
@@ -79,6 +80,10 @@ pub async fn start_server(
             app_state.comment_srv.clone(),
             app_state.interactive_srv.clone(),
         ),
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        UsersLoader::new(app_state.user_srv.clone()),
         tokio::spawn,
     ))
     .data(app_state.clone())

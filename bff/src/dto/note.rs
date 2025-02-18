@@ -1,6 +1,8 @@
 use crate::data_loader::note_comments_count_loader::NoteCommentsCountLoader;
 use crate::data_loader::note_views_loader::NoteViewsLoader;
 // use crate::dto::user::User;
+use crate::data_loader::users_loader::UsersLoader;
+use crate::dto::user::User;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::{ComplexObject, Context, Enum, Result, SimpleObject};
 use chrono::{DateTime, Utc};
@@ -54,9 +56,12 @@ pub struct Note {
 
 #[ComplexObject]
 impl Note {
-    // pub async fn user(&self, ctx: &Context<'_>) -> Result<User> {
-    //     unimplemented!()
-    // }
+    pub async fn user(&self, ctx: &Context<'_>) -> Result<Option<User>> {
+        let loader = ctx.data::<DataLoader<UsersLoader>>()?;
+        let ret = loader.load_one(self.user_id).await?;
+
+        Ok(ret)
+    }
 
     pub async fn comments_count(&self, ctx: &Context<'_>) -> Result<i64> {
         let loader = ctx.data::<DataLoader<NoteCommentsCountLoader>>()?;

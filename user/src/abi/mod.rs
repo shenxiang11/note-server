@@ -1,9 +1,10 @@
 use crate::pb::user::{
-    CreateUserRequest, CreateUserResponse, GetUserByIdRequest, GetUserByIdResponse,
-    SendRegisterEmailCodeRequest, SendRegisterEmailCodeResponse, UpdateUserRequest,
-    UpdateUserResponse, VerifyRequest, VerifyResponse,
+    BatchGetUsersRequest, BatchGetUsersResponse, CreateUserRequest, CreateUserResponse,
+    GetUserByIdRequest, GetUserByIdResponse, SendRegisterEmailCodeRequest,
+    SendRegisterEmailCodeResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest,
+    VerifyResponse,
 };
-use crate::UserSrv;
+use crate::{pb, UserSrv};
 use tonic::{Response, Status};
 use tracing::debug;
 
@@ -59,5 +60,15 @@ impl UserSrv {
             .update(request.id, request.fullname, request.avatar, request.bio)
             .await?;
         Ok(Response::new(UpdateUserResponse {}))
+    }
+
+    pub async fn batch_get_users(
+        &self,
+        request: BatchGetUsersRequest,
+    ) -> Result<Response<BatchGetUsersResponse>, Status> {
+        let users = self.user_repo.batch_get_users(request.ids).await?;
+        Ok(Response::new(BatchGetUsersResponse {
+            user: users.into_iter().map(|u| (u.0, u.1.into())).collect(),
+        }))
     }
 }

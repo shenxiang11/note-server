@@ -1,6 +1,7 @@
 use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
 use crate::data_loader::replies_count_loader::RepliesCountLoader;
-use crate::model::user::User;
+use crate::data_loader::users_loader::UsersLoader;
+use crate::dto::user::User;
 use crate::util::time::PbTimestamp;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
@@ -21,9 +22,12 @@ pub struct Comment {
 
 #[ComplexObject]
 impl Comment {
-    // pub async fn user(&self, ctx: &Context<'_>) -> Result<User> {
-    //     unimplemented!()
-    // }
+    pub async fn user(&self, ctx: &Context<'_>) -> Result<Option<User>> {
+        let loader = ctx.data::<DataLoader<UsersLoader>>()?;
+        let ret = loader.load_one(self.user_id).await?;
+
+        Ok(ret)
+    }
 
     pub async fn top_two_replies(&self, ctx: &Context<'_>) -> Result<Vec<Comment>> {
         let loader = ctx.data::<DataLoader<CommentRepliesLoader>>()?;

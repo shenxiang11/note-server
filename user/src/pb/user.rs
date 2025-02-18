@@ -70,6 +70,16 @@ pub struct User {
     #[prost(message, optional, tag = "6")]
     pub created_at: ::core::option::Option<::prost_types::Timestamp>,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetUsersRequest {
+    #[prost(int64, repeated, tag = "1")]
+    pub ids: ::prost::alloc::vec::Vec<i64>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetUsersResponse {
+    #[prost(map = "int64, message", tag = "1")]
+    pub user: ::std::collections::HashMap<i64, User>,
+}
 /// Generated client implementations.
 pub mod user_service_client {
     #![allow(
@@ -275,6 +285,30 @@ pub mod user_service_client {
                 .insert(GrpcMethod::new("user.UserService", "UpdateUser"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn batch_get_users(
+            &mut self,
+            request: impl tonic::IntoRequest<super::BatchGetUsersRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetUsersResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/user.UserService/BatchGetUsers",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("user.UserService", "BatchGetUsers"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -320,6 +354,13 @@ pub mod user_service_server {
             request: tonic::Request<super::UpdateUserRequest>,
         ) -> std::result::Result<
             tonic::Response<super::UpdateUserResponse>,
+            tonic::Status,
+        >;
+        async fn batch_get_users(
+            &self,
+            request: tonic::Request<super::BatchGetUsersRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetUsersResponse>,
             tonic::Status,
         >;
     }
@@ -613,6 +654,51 @@ pub mod user_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = UpdateUserSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/user.UserService/BatchGetUsers" => {
+                    #[allow(non_camel_case_types)]
+                    struct BatchGetUsersSvc<T: UserService>(pub Arc<T>);
+                    impl<
+                        T: UserService,
+                    > tonic::server::UnaryService<super::BatchGetUsersRequest>
+                    for BatchGetUsersSvc<T> {
+                        type Response = super::BatchGetUsersResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::BatchGetUsersRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as UserService>::batch_get_users(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = BatchGetUsersSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
