@@ -2,8 +2,10 @@ use crate::dto::note::NoteStatus;
 use crate::util::AuthGuard;
 use crate::AppState;
 use async_graphql::{Context, InputObject, Object};
+use interactive::model::{NoteCommentMessage, NoteLikeMessage};
 use interactive::pb::UserLikesBiz;
 use serde::{Deserialize, Serialize};
+use tracing::error;
 
 #[derive(Default)]
 pub(crate) struct NoteMutation;
@@ -47,24 +49,66 @@ impl NoteMutation {
 
     #[graphql(guard = "AuthGuard")]
     pub async fn like_note(&self, ctx: &Context<'_>, id: i64) -> async_graphql::Result<String> {
-        let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>()?;
-        state
+        let state = ctx.data::<AppState>()?.clone();
+        let user_id = ctx.data::<i64>()?.clone();
+        let ret = state
             .interactive_srv
-            .like(*user_id, UserLikesBiz::UserLikesNote, id)
+            .like(user_id, UserLikesBiz::UserLikesNote, id)
             .await?;
+
+        tokio::spawn(async move {
+            let data = NoteLikeMessage {
+                biz_id: id,
+                user_id,
+                like: true,
+            };
+            let data = serde_json::to_string(&data);
+            if let Err(e) = data {
+                error!("failed to serialize note comment message: {}", e);
+                return;
+            }
+            let ret = state.message_queue.produce_message(
+                id.to_string().as_bytes(),
+                String::as_bytes(&data.unwrap_or_default()),
+                "NoteLike",
+            );
+            if let Err(e) = ret {
+                error!("failed to produce message: {}", e);
+            }
+        });
 
         Ok("success".to_string())
     }
 
     #[graphql(guard = "AuthGuard")]
     pub async fn unlike_note(&self, ctx: &Context<'_>, id: i64) -> async_graphql::Result<String> {
-        let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>()?;
-        state
+        let state = ctx.data::<AppState>()?.clone();
+        let user_id = ctx.data::<i64>()?.clone();
+        let ret = state
             .interactive_srv
-            .unlike(*user_id, UserLikesBiz::UserLikesNote, id)
+            .unlike(user_id, UserLikesBiz::UserLikesNote, id)
             .await?;
+
+        tokio::spawn(async move {
+            let data = NoteLikeMessage {
+                biz_id: id,
+                user_id,
+                like: false,
+            };
+            let data = serde_json::to_string(&data);
+            if let Err(e) = data {
+                error!("failed to serialize note comment message: {}", e);
+                return;
+            }
+            let ret = state.message_queue.produce_message(
+                id.to_string().as_bytes(),
+                String::as_bytes(&data.unwrap_or_default()),
+                "NoteLike",
+            );
+            if let Err(e) = ret {
+                error!("failed to produce message: {}", e);
+            }
+        });
 
         Ok("success".to_string())
     }

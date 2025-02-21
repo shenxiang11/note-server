@@ -7,6 +7,16 @@ import "google/protobuf/timestamp.proto";
 service NoteService {
   rpc CreateOrUpdate(CreateOrUpdateRequest) returns (CreateOrUpdateResponse);
   rpc GetPublishedNote(GetPublishedNoteRequest) returns (GetPublishedNoteResponse);
+  rpc GetPublishedNotes(GetPublishedNotesRequest) returns (GetPublishedNotesResponse);
+}
+
+message GetPublishedNotesRequest {
+  int64 page_size = 1;
+  optional int64 cursor = 2;
+}
+
+message GetPublishedNotesResponse {
+  repeated GetPublishedNoteResponse notes = 1;
 }
 
 enum NoteStatus {

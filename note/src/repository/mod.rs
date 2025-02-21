@@ -30,12 +30,20 @@ impl NoteRepo {
         Ok(result)
     }
 
-    pub async fn get_published_notes(&self) -> Result<Vec<PublishedNote>> {
+    pub async fn get_published_notes(
+        &self,
+        page_size: i64,
+        last_id: Option<i64>,
+    ) -> Result<Vec<PublishedNote>> {
+        let cursor = last_id.unwrap_or_else(|| i64::MAX);
+
         let result: Vec<PublishedNote> = sqlx::query_as(
             r#"
-            SELECT * FROM published_notes;
+            SELECT * FROM published_notes WHERE id < $1 ORDER BY id DESC LIMIT $2;
             "#,
         )
+        .bind(cursor)
+        .bind(page_size)
         .fetch_all(&self.db_read)
         .await?;
 

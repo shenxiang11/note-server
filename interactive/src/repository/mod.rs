@@ -101,6 +101,10 @@ impl InteractiveRepo {
     }
 
     pub async fn save_count(&self, biz: CountBiz, biz_id: i64, n: i64) -> Result<()> {
+        println!(
+            "save_count: biz: {:?}, biz_id: {:?}, n: {:?}",
+            biz, biz_id, n
+        );
         let ret = sqlx::query(
             r#"
             INSERT INTO counters (biz, biz_id, count)
@@ -166,12 +170,13 @@ impl InteractiveRepo {
     }
 
     pub async fn save_like(&self, biz: UserLikesBiz, biz_id: i64, user_id: i64) -> Result<()> {
-        sqlx::query(
+        let ret = sqlx::query(
             r#"
             INSERT INTO user_likes (biz, biz_id, user_id)
             VALUES ($1, $2, $3)
             ON CONFLICT (biz, biz_id, user_id)
-            DO UPDATE SET deleted_at = NULL, updated_at = now();
+            DO UPDATE SET deleted_at = NULL, updated_at = now()
+            WHERE user_likes.deleted_at IS NOT NULL;
             "#,
         )
         .bind(biz)
@@ -179,16 +184,20 @@ impl InteractiveRepo {
         .bind(user_id)
         .execute(&self.db)
         .await?;
+
+        if ret.rows_affected() == 0 {
+            return Err(anyhow::anyhow!("save_like failed"));
+        }
 
         Ok(())
     }
 
     pub async fn cancel_like(&self, biz: UserLikesBiz, biz_id: i64, user_id: i64) -> Result<()> {
-        sqlx::query(
+        let ret = sqlx::query(
             r#"
             UPDATE user_likes
             SET deleted_at = now()
-            WHERE biz = $1 AND biz_id = $2 AND user_id = $3;
+            WHERE biz = $1 AND biz_id = $2 AND user_id = $3 AND deleted_at IS NULL;
             "#,
         )
         .bind(biz)
@@ -196,6 +205,10 @@ impl InteractiveRepo {
         .bind(user_id)
         .execute(&self.db)
         .await?;
+
+        if ret.rows_affected() == 0 {
+            return Err(anyhow::anyhow!("cancel_like failed"));
+        }
 
         Ok(())
     }

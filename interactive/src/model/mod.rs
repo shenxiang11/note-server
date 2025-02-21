@@ -38,6 +38,13 @@ pub struct Counter {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NoteLikeMessage {
+    pub biz_id: i64,
+    pub user_id: i64,
+    pub like: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteReadMessage {
     pub biz_id: i64,
     pub user_id: Option<i64>,

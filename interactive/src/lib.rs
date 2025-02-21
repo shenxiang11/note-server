@@ -26,13 +26,6 @@ impl InteractiveSrv {
 
 #[async_trait]
 impl InteractiveService for InteractiveSrv {
-    async fn batch_get_is_liked(
-        &self,
-        request: Request<BatchGetIsLikedRequest>,
-    ) -> Result<Response<BatchGetIsLikedResponse>, Status> {
-        self.batch_get_is_liked(request.into_inner()).await
-    }
-
     async fn save_count(
         &self,
         request: Request<SaveCountRequest>,
@@ -63,5 +56,12 @@ impl InteractiveService for InteractiveSrv {
         request: Request<UnlikeRequest>,
     ) -> Result<Response<UnlikeResponse>, Status> {
         self.unlike(request.into_inner()).await
+    }
+
+    async fn batch_get_is_liked(
+        &self,
+        request: Request<BatchGetIsLikedRequest>,
+    ) -> Result<Response<BatchGetIsLikedResponse>, Status> {
+        self.batch_get_is_liked(request.into_inner()).await
     }
 }

@@ -69,8 +69,48 @@ impl NoteSrv {
         }
     }
 
-    pub async fn get_published_notes(&self) -> Result<Vec<Note>> {
-        unimplemented!()
+    pub async fn get_published_notes(
+        &self,
+        page_size: i64,
+        cursor: Option<i64>,
+    ) -> Result<Vec<Note>> {
+        let mut client = self.client.clone();
+        let request =
+            tonic::Request::new(note::pb::note::GetPublishedNotesRequest { page_size, cursor });
+        let response = client.get_published_notes(request).await?;
+        let response = response.into_inner();
+        let notes = response.notes;
+        let notes = notes
+            .into_iter()
+            .map(|note| match note.note {
+                Some(NormalNote(note)) => Note {
+                    id: note.id,
+                    title: note.title,
+                    content: note.content,
+                    images: note.images.unwrap_or_default().images,
+                    video: "".to_string(),
+                    status: note.status.into(),
+                    user_id: note.user_id,
+                    created_at: PbTimestamp::from(note.created_at.unwrap_or_default()).into(),
+                    updated_at: PbTimestamp::from(note.updated_at.unwrap_or_default()).into(),
+                    r#type: NoteType::Normal,
+                },
+                Some(VideoNote(note)) => Note {
+                    id: note.id,
+                    title: note.title,
+                    content: note.content,
+                    images: vec![],
+                    video: note.video,
+                    status: note.status.into(),
+                    user_id: note.user_id,
+                    created_at: PbTimestamp::from(note.created_at.unwrap_or_default()).into(),
+                    updated_at: PbTimestamp::from(note.updated_at.unwrap_or_default()).into(),
+                    r#type: NoteType::Video,
+                },
+                _ => unimplemented!(),
+            })
+            .collect();
+        Ok(notes)
     }
 
     pub async fn create_or_update(
