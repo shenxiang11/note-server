@@ -4,17 +4,17 @@ use async_graphql::FieldError;
 use interactive::pb::CountBiz;
 use std::collections::HashMap;
 
-pub struct NoteCommentsCountLoader {
+pub struct NoteCollectedCountLoader {
     interactive_srv: InteractiveSrv,
 }
 
-impl NoteCommentsCountLoader {
+impl NoteCollectedCountLoader {
     pub fn new(interactive_srv: InteractiveSrv) -> Self {
         Self { interactive_srv }
     }
 }
 
-impl Loader<i64> for NoteCommentsCountLoader {
+impl Loader<i64> for NoteCollectedCountLoader {
     type Value = i64;
     type Error = FieldError;
 
@@ -24,7 +24,7 @@ impl Loader<i64> for NoteCommentsCountLoader {
     ) -> async_graphql::Result<HashMap<i64, Self::Value>, Self::Error> {
         Ok(self
             .interactive_srv
-            .batch_get_count(CountBiz::CountNoteComment, keys.to_vec())
+            .batch_get_count(CountBiz::CountNoteCollect, keys.to_vec())
             .await?)
     }
 }

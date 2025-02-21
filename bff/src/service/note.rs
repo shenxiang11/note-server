@@ -73,10 +73,6 @@ impl NoteSrv {
         unimplemented!()
     }
 
-    pub async fn upsert(&self, user_id: i64, input: EditNoteInput) -> Result<Note> {
-        unimplemented!()
-    }
-
     pub async fn create_or_update(
         &self,
         user_id: i64,

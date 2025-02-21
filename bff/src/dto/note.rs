@@ -1,6 +1,9 @@
-use crate::data_loader::note_comments_count_loader::NoteCommentsCountLoader;
-use crate::data_loader::note_views_loader::NoteViewsLoader;
 // use crate::dto::user::User;
+use crate::data_loader::note_collected_count_loader::NoteCollectedCountLoader;
+use crate::data_loader::note_comments_count_loader::NoteCommentsCountLoader;
+use crate::data_loader::note_liked_loader::NoteLikedLoader;
+use crate::data_loader::note_likes_count_loader::NoteLikesCountLoader;
+use crate::data_loader::note_views_loader::NoteViewsLoader;
 use crate::data_loader::users_loader::UsersLoader;
 use crate::dto::user::User;
 use async_graphql::dataloader::DataLoader;
@@ -56,6 +59,34 @@ pub struct Note {
 
 #[ComplexObject]
 impl Note {
+    pub async fn liked(&self, ctx: &Context<'_>) -> Result<bool> {
+        let user_id = ctx.data::<i64>();
+        match user_id {
+            Ok(user_id) => {
+                let loader = ctx.data::<DataLoader<NoteLikedLoader>>()?;
+                let ret = loader.load_one((self.id, *user_id)).await?;
+                Ok(ret.unwrap_or_default())
+            }
+            Err(_) => Ok(false),
+        }
+    }
+
+    pub async fn liked_count(&self, ctx: &Context<'_>) -> Result<i64> {
+        let loader = ctx.data::<DataLoader<NoteLikesCountLoader>>()?;
+        let ret = loader.load_one(self.id).await?;
+        Ok(ret.unwrap_or_default())
+    }
+
+    pub async fn collected(&self, ctx: &Context<'_>) -> Result<bool> {
+        Ok(false)
+    }
+
+    pub async fn collected_count(&self, ctx: &Context<'_>) -> Result<i64> {
+        let loader = ctx.data::<DataLoader<NoteCollectedCountLoader>>()?;
+        let ret = loader.load_one(self.id).await?;
+        Ok(ret.unwrap_or_default())
+    }
+
     pub async fn user(&self, ctx: &Context<'_>) -> Result<Option<User>> {
         let loader = ctx.data::<DataLoader<UsersLoader>>()?;
         let ret = loader.load_one(self.user_id).await?;

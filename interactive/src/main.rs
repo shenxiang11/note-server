@@ -30,6 +30,7 @@ async fn main() -> Result<()> {
 
     let interactive_repo = InteractiveRepo::new(db.clone(), db_read.clone());
     let interactive_srv = InteractiveSrv::new(interactive_repo.clone());
+
     let cfg = app_config.clone();
     tokio::spawn(async move {
         let note_read_consumer = NoteReadConsumer::new(cfg.kafka.brokers.clone(), interactive_repo);
@@ -39,7 +40,6 @@ async fn main() -> Result<()> {
     });
 
     let interactive_repo = InteractiveRepo::new(db, db_read);
-    let interactive_srv = InteractiveSrv::new(interactive_repo.clone());
     let cfg = app_config.clone();
     tokio::spawn(async move {
         let note_comment_consumer =

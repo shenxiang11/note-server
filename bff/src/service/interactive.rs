@@ -56,6 +56,30 @@ impl InteractiveSrv {
         Ok(())
     }
 
+    pub async fn batch_get_liked(
+        &self,
+        biz: UserLikesBiz,
+        biz_ids_and_user_ids: Vec<(i64, i64)>,
+    ) -> Result<HashMap<(i64, i64), bool>> {
+        let mut client = self.client.clone();
+        let resp = client
+            .batch_get_is_liked(interactive::pb::BatchGetIsLikedRequest {
+                biz: biz as i32,
+                query: biz_ids_and_user_ids
+                    .into_iter()
+                    .map(|(biz_id, user_id)| interactive::pb::BizIdsAndUserIds { biz_id, user_id })
+                    .collect(),
+            })
+            .await?
+            .into_inner();
+
+        Ok(resp
+            .results
+            .iter()
+            .map(|row| ((row.biz_id, row.user_id), row.is_liked))
+            .collect())
+    }
+
     pub async fn batch_get_count(
         &self,
         biz: CountBiz,

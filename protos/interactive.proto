@@ -8,6 +8,7 @@ service InteractiveService {
   rpc BatchGetCount(BatchGetCountRequest) returns (BatchGetCountResponse);
   rpc Like(LikeRequest) returns (LikeResponse);
   rpc Unlike(UnlikeRequest) returns (UnlikeResponse);
+  rpc BatchGetIsLiked(BatchGetIsLikedRequest) returns (BatchGetIsLikedResponse);
 }
 
 enum CountBiz {
@@ -65,3 +66,23 @@ message UnlikeRequest {
 }
 
 message UnlikeResponse {}
+
+message BizIdsAndUserIds {
+  int64 biz_id = 1;
+  int64 user_id = 2;
+}
+
+message BatchGetIsLikedRequest {
+  UserLikesBiz biz = 1;
+  repeated BizIdsAndUserIds query = 2;
+}
+
+message BizIdsAndUserIdsAndIsLiked {
+  int64 biz_id = 1;
+  int64 user_id = 2;
+  bool is_liked = 3;
+}
+
+message BatchGetIsLikedResponse {
+  repeated BizIdsAndUserIdsAndIsLiked results = 1;
+}

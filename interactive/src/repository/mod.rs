@@ -1,6 +1,6 @@
 use crate::model::{CountBiz, Counter, NoteReadMessage, UserHistoryBiz, UserLikesBiz};
 use anyhow::Result;
-use sqlx::{PgPool, Row};
+use sqlx::{Database, PgPool, Row};
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::Deref;
@@ -34,6 +34,43 @@ impl InteractiveRepo {
                 db_read,
             }),
         }
+    }
+
+    pub async fn batch_get_is_liked(
+        &self,
+        biz: UserLikesBiz,
+        biz_ids_and_user_ids: Vec<(i64, i64)>,
+    ) -> Result<HashMap<(i64, i64), bool>> {
+        let mut is_liked = HashMap::new();
+
+        let biz_ids_and_user_ids = biz_ids_and_user_ids
+            .iter()
+            .map(|(biz_id, user_id)| format!("({}, {})", biz_id, user_id))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let query_str = format!(
+            r#"
+            SELECT *
+            FROM user_likes
+            WHERE biz = $1 AND (biz_id, user_id) IN ({}) AND deleted_at IS NULL;
+            "#,
+            biz_ids_and_user_ids
+        );
+
+        let _ = sqlx::query(query_str.as_str())
+            .bind(biz)
+            .bind(biz_ids_and_user_ids)
+            .fetch_all(&self.db_read)
+            .await?
+            .iter()
+            .for_each(|row| {
+                let biz_id: i64 = row.get("biz_id");
+                let user_id: i64 = row.get("user_id");
+                is_liked.insert((biz_id, user_id), true);
+            });
+
+        Ok(is_liked)
     }
 
     pub async fn batch_get_count(

@@ -56,6 +56,34 @@ pub struct UnlikeRequest {
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct UnlikeResponse {}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct BizIdsAndUserIds {
+    #[prost(int64, tag = "1")]
+    pub biz_id: i64,
+    #[prost(int64, tag = "2")]
+    pub user_id: i64,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetIsLikedRequest {
+    #[prost(enumeration = "UserLikesBiz", tag = "1")]
+    pub biz: i32,
+    #[prost(message, repeated, tag = "2")]
+    pub query: ::prost::alloc::vec::Vec<BizIdsAndUserIds>,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct BizIdsAndUserIdsAndIsLiked {
+    #[prost(int64, tag = "1")]
+    pub biz_id: i64,
+    #[prost(int64, tag = "2")]
+    pub user_id: i64,
+    #[prost(bool, tag = "3")]
+    pub is_liked: bool,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetIsLikedResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub results: ::prost::alloc::vec::Vec<BizIdsAndUserIdsAndIsLiked>,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum CountBiz {
@@ -327,6 +355,32 @@ pub mod interactive_service_client {
                 .insert(GrpcMethod::new("interactive.InteractiveService", "Unlike"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn batch_get_is_liked(
+            &mut self,
+            request: impl tonic::IntoRequest<super::BatchGetIsLikedRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetIsLikedResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/interactive.InteractiveService/BatchGetIsLiked",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("interactive.InteractiveService", "BatchGetIsLiked"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -371,6 +425,13 @@ pub mod interactive_service_server {
             &self,
             request: tonic::Request<super::UnlikeRequest>,
         ) -> std::result::Result<tonic::Response<super::UnlikeResponse>, tonic::Status>;
+        async fn batch_get_is_liked(
+            &self,
+            request: tonic::Request<super::BatchGetIsLikedRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetIsLikedResponse>,
+            tonic::Status,
+        >;
     }
     #[derive(Debug)]
     pub struct InteractiveServiceServer<T> {
@@ -658,6 +719,55 @@ pub mod interactive_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = UnlikeSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/interactive.InteractiveService/BatchGetIsLiked" => {
+                    #[allow(non_camel_case_types)]
+                    struct BatchGetIsLikedSvc<T: InteractiveService>(pub Arc<T>);
+                    impl<
+                        T: InteractiveService,
+                    > tonic::server::UnaryService<super::BatchGetIsLikedRequest>
+                    for BatchGetIsLikedSvc<T> {
+                        type Response = super::BatchGetIsLikedResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::BatchGetIsLikedRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as InteractiveService>::batch_get_is_liked(
+                                        &inner,
+                                        request,
+                                    )
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = BatchGetIsLikedSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

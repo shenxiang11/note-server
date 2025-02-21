@@ -23,6 +23,33 @@ impl IMRepo {
         }
     }
 
+    pub async fn update_or_create_user(
+        &self,
+        user_id: i64,
+        nickname: String,
+        face_url: String,
+    ) -> Result<()> {
+        let check = self.check_user(user_id).await?;
+        println!("check user: {}", check);
+
+        if check {
+            self.update_user(UserUpdateMessage {
+                user_id,
+                nickname,
+                face_url,
+            })
+            .await?;
+        } else {
+            self.create_users(vec![UserRegisterMessage {
+                user_id,
+                nickname,
+                face_url,
+            }])
+            .await?;
+        }
+        Ok(())
+    }
+
     pub async fn update_user(&self, user: UserUpdateMessage) -> Result<()> {
         let token = self.get_token().await?;
         let client = reqwest::Client::new();
@@ -41,7 +68,7 @@ impl IMRepo {
             .send()
             .await?;
 
-        let resp = resp.json::<IMResponse>().await?;
+        let resp = resp.json::<IMResponse<EmptyData>>().await?;
         if resp.err_code != 0 {
             return Err(anyhow::anyhow!("sync user failed: {}", resp.err_msg));
         }
@@ -73,13 +100,43 @@ impl IMRepo {
             .json(&params)
             .send()
             .await?;
-        let resp = resp.json::<IMResponse>().await?;
+        let resp = resp.json::<IMResponse<EmptyData>>().await?;
 
         if resp.err_code != 0 {
             return Err(anyhow::anyhow!("sync user failed: {}", resp.err_msg));
         }
 
         Ok(())
+    }
+
+    async fn check_user(&self, check_id: i64) -> Result<bool> {
+        let token = self.get_token().await?;
+        let client = reqwest::Client::new();
+        let url = format!("{}/user/account_check", self.api_address);
+        let mut params = HashMap::new();
+        params.insert("checkUserIDs", vec![check_id.to_string()]);
+        let resp = client
+            .post(&url)
+            .header("OperationID", Utc::now().timestamp_millis().to_string())
+            .header("token", token)
+            .json(&params)
+            .send()
+            .await?;
+        let resp = resp.json::<IMResponse<CheckUserData>>().await?;
+
+        if resp.err_code != 0 {
+            return Err(anyhow::anyhow!("sync user failed: {}", resp.err_msg));
+        }
+
+        match resp.data {
+            Some(data) => {
+                if data.results.is_empty() {
+                    return Ok(false);
+                }
+                Ok(data.results[0].account_status == 1)
+            }
+            None => Err(anyhow::anyhow!("sync user failed: {}", resp.err_msg)),
+        }
     }
 
     async fn get_token(&self) -> Result<String> {
@@ -102,7 +159,7 @@ impl IMRepo {
             .json(&params)
             .send()
             .await?;
-        let resp = resp.json::<IMResponse>().await?;
+        let resp = resp.json::<IMResponse<AdminData>>().await?;
 
         match resp.data {
             Some(data) => {
@@ -117,19 +174,35 @@ impl IMRepo {
 }
 
 #[derive(Deserialize, Debug)]
-struct Data {
+struct AdminData {
     token: String,
     #[serde(rename = "expireTimeSeconds")]
     expire_time_seconds: u64,
 }
 
 #[derive(Deserialize, Debug)]
-struct IMResponse {
+struct CheckUserData {
+    results: Vec<CheckUserDataItem>,
+}
+
+#[derive(Deserialize, Debug)]
+struct CheckUserDataItem {
+    #[serde(rename = "userID")]
+    user_id: String,
+    #[serde(rename = "accountStatus")]
+    account_status: i8,
+}
+
+#[derive(Deserialize, Debug)]
+struct IMResponse<T> {
     #[serde(rename = "errCode")]
     err_code: i32,
     #[serde(rename = "errMsg")]
     err_msg: String,
     #[serde(rename = "errDlt")]
     err_dlt: String,
-    data: Option<Data>,
+    data: Option<T>,
 }
+
+#[derive(Deserialize, Debug)]
+struct EmptyData;

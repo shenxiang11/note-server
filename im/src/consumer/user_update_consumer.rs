@@ -47,7 +47,9 @@ impl UserUpdateConsumer {
 
             if !messages_batch.is_empty() {
                 for u in messages_batch.clone() {
-                    self.im_repo.update_user(u).await?;
+                    self.im_repo
+                        .update_or_create_user(u.user_id, u.nickname, u.face_url)
+                        .await?;
                 }
             }
 
