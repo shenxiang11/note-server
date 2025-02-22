@@ -13,6 +13,26 @@ pub(crate) struct UserMutation;
 #[Object]
 impl UserMutation {
     #[graphql(guard = "AuthGuard")]
+    pub async fn follow(&self, ctx: &Context<'_>, user_id: i64) -> Result<String> {
+        let state = ctx.data::<AppState>()?.clone();
+        let follower_id = ctx.data::<i64>()?.clone();
+
+        let _ = state.user_srv.follow_user(follower_id, user_id).await?;
+
+        Ok("".to_string())
+    }
+
+    #[graphql(guard = "AuthGuard")]
+    pub async fn unfollow(&self, ctx: &Context<'_>, user_id: i64) -> Result<String> {
+        let state = ctx.data::<AppState>()?.clone();
+        let follower_id = ctx.data::<i64>()?.clone();
+
+        let _ = state.user_srv.unfollow_user(follower_id, user_id).await?;
+
+        Ok("".to_string())
+    }
+
+    #[graphql(guard = "AuthGuard")]
     pub async fn profile(
         &self,
         ctx: &Context<'_>,

@@ -1,9 +1,9 @@
 use crate::pb::user::user_service_server::UserService;
 use crate::pb::user::{
     BatchGetUsersRequest, BatchGetUsersResponse, CreateUserRequest, CreateUserResponse,
-    GetUserByIdRequest, GetUserByIdResponse, SendRegisterEmailCodeRequest,
-    SendRegisterEmailCodeResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest,
-    VerifyResponse,
+    FollowUserRequest, FollowUserResponse, GetUserByIdRequest, GetUserByIdResponse,
+    SendRegisterEmailCodeRequest, SendRegisterEmailCodeResponse, UnfollowUserRequest,
+    UnfollowUserResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest, VerifyResponse,
 };
 use crate::repository::UserRepo;
 use tonic::{async_trait, Request, Response, Status};
@@ -67,5 +67,19 @@ impl UserService for UserSrv {
         request: Request<BatchGetUsersRequest>,
     ) -> Result<Response<BatchGetUsersResponse>, Status> {
         self.batch_get_users(request.into_inner()).await
+    }
+
+    async fn follow_user(
+        &self,
+        request: Request<FollowUserRequest>,
+    ) -> Result<Response<FollowUserResponse>, Status> {
+        self.follow_user(request.into_inner()).await
+    }
+
+    async fn unfollow_user(
+        &self,
+        request: Request<UnfollowUserRequest>,
+    ) -> Result<Response<UnfollowUserResponse>, Status> {
+        self.unfollow_user(request.into_inner()).await
     }
 }

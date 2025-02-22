@@ -1,8 +1,8 @@
 use crate::pb::user::{
     BatchGetUsersRequest, BatchGetUsersResponse, CreateUserRequest, CreateUserResponse,
-    GetUserByIdRequest, GetUserByIdResponse, SendRegisterEmailCodeRequest,
-    SendRegisterEmailCodeResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest,
-    VerifyResponse,
+    FollowUserRequest, FollowUserResponse, GetUserByIdRequest, GetUserByIdResponse,
+    SendRegisterEmailCodeRequest, SendRegisterEmailCodeResponse, UnfollowUserRequest,
+    UnfollowUserResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest, VerifyResponse,
 };
 use crate::{pb, UserSrv};
 use tonic::{Response, Status};
@@ -70,5 +70,27 @@ impl UserSrv {
         Ok(Response::new(BatchGetUsersResponse {
             user: users.into_iter().map(|u| (u.0, u.1.into())).collect(),
         }))
+    }
+
+    pub async fn follow_user(
+        &self,
+        request: FollowUserRequest,
+    ) -> Result<Response<FollowUserResponse>, Status> {
+        let _ = self
+            .user_repo
+            .follow_user(request.follower, request.followee)
+            .await?;
+        Ok(Response::new(FollowUserResponse {}))
+    }
+
+    pub async fn unfollow_user(
+        &self,
+        request: UnfollowUserRequest,
+    ) -> Result<Response<UnfollowUserResponse>, Status> {
+        let _ = self
+            .user_repo
+            .unfollow_user(request.follower, request.followee)
+            .await?;
+        Ok(Response::new(UnfollowUserResponse {}))
     }
 }

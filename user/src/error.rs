@@ -22,6 +22,10 @@ pub enum UserServiceError {
     UserAlreadyExists(String),
     #[error("email code error")]
     EmailCodeError,
+    #[error("follow user failed")]
+    FollowUserFailed,
+    #[error("unfollow user failed")]
+    UnfollowUserFailed,
     #[error("internal server error: {0}")]
     InternalServerError(String),
 }

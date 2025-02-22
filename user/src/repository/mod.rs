@@ -320,6 +320,52 @@ impl UserRepo {
         let serial_no = format!("{}{:0>4}", date_prefix, no);
         Ok(serial_no)
     }
+
+    pub async fn follow_user(&self, follower: i64, followee: i64) -> Result<(), UserServiceError> {
+        let ret = sqlx::query(
+            r#"
+            INSERT INTO follow_relations (follower, followee)
+            VALUES ($1, $2)
+            ON CONFLICT (follower, followee)
+            DO UPDATE SET deleted_at = NULL, updated_at = now()
+            WHERE follow_relations.deleted_at IS NOT NULL;
+            "#,
+        )
+        .bind(follower)
+        .bind(followee)
+        .execute(&self.db)
+        .await?;
+
+        if ret.rows_affected() == 0 {
+            return Err(UserServiceError::FollowUserFailed);
+        }
+
+        Ok(())
+    }
+
+    pub async fn unfollow_user(
+        &self,
+        follower: i64,
+        followee: i64,
+    ) -> Result<(), UserServiceError> {
+        let ret = sqlx::query(
+            r#"
+            UPDATE follow_relations
+            SET deleted_at = now()
+            WHERE follower = $1 AND followee = $2 AND deleted_at IS NULL;
+            "#,
+        )
+        .bind(follower)
+        .bind(followee)
+        .execute(&self.db)
+        .await?;
+
+        if ret.rows_affected() == 0 {
+            return Err(UserServiceError::UnfollowUserFailed);
+        }
+
+        Ok(())
+    }
 }
 
 // 使用邮箱发送验证码

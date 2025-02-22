@@ -11,7 +11,23 @@ service UserService {
   rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
   rpc BatchGetUsers(BatchGetUsersRequest) returns (BatchGetUsersResponse);
+  rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
+  rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
 }
+
+message FollowUserRequest {
+  int64 follower = 1;
+  int64 followee = 2;
+}
+
+message FollowUserResponse {}
+
+message UnfollowUserRequest {
+  int64 follower = 1;
+  int64 followee = 2;
+}
+
+message UnfollowUserResponse {}
 
 message SendRegisterEmailCodeRequest {
   string email = 1;

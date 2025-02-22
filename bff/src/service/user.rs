@@ -115,23 +115,6 @@ impl UserSrv {
         Ok(())
     }
 
-    // pub async fn get_user_by_email(&self, email: &str) -> anyhow::Result<User, AppError> {
-    //     let user: Option<User> = sqlx::query_as(
-    //         r#"
-    //         SELECT id, serial_number, fullname, email, password_hash, avatar, bio, created_at FROM users
-    //         WHERE email = $1
-    //         "#,
-    //     )
-    //         .bind(email)
-    //         .fetch_optional(&self.db)
-    //         .await?;
-    //
-    //     match user {
-    //         Some(user) => Ok(user),
-    //         None => Err(AppError::NotFound("user not found".to_string())),
-    //     }
-    // }
-
     pub async fn get_user_by_id(&self, id: i64) -> anyhow::Result<User> {
         let mut client = self.client.clone();
         let resp = client
@@ -145,41 +128,23 @@ impl UserSrv {
         }
     }
 
-    // async fn create_user(&self, email: &str, password: &str) -> anyhow::Result<User, AppError> {
-    //     let serial_number = self.gen_serial_no().await?;
-    //     let fullname = self.gen_fullname();
-    //     let password_hash = hash_password(password)?;
-    //
-    //     let ret = sqlx::query_as(
-    //         r#"
-    //         INSERT INTO users (serial_number, fullname, email, password_hash)
-    //         VALUES ($1, $2, $3, $4)
-    //         RETURNING *
-    //         "#,
-    //     )
-    //     .bind(&serial_number)
-    //     .bind(&fullname)
-    //     .bind(email)
-    //     .bind(&password_hash)
-    //     .fetch_one(&self.db)
-    //     .await;
-    //
-    //     match ret {
-    //         Ok(user) => {
-    //             let user: User = user;
-    //             Ok(user)
-    //         }
-    //         Err(e) => {
-    //             if let Error::Database(db_err) = e {
-    //                 if let code = db_err.code().ok_or(AppError::InternalServerError)? {
-    //                     if code == "23505" {
-    //                         return Err(AppError::DuplicateKey(db_err.message().to_string()));
-    //                     }
-    //                 }
-    //             }
-    //             // FIXME: 不想返回这个错误，该是什么错误返回什么错误
-    //             Err(AppError::InternalServerError)
-    //         }
-    //     }
-    // }
+    pub async fn follow_user(&self, follower: i64, followee: i64) -> anyhow::Result<()> {
+        let mut client = self.client.clone();
+        let _ = client
+            .follow_user(user::pb::user::FollowUserRequest { follower, followee })
+            .await?
+            .into_inner();
+
+        Ok(())
+    }
+
+    pub async fn unfollow_user(&self, follower: i64, followee: i64) -> anyhow::Result<()> {
+        let mut client = self.client.clone();
+        let _ = client
+            .unfollow_user(user::pb::user::UnfollowUserRequest { follower, followee })
+            .await?
+            .into_inner();
+
+        Ok(())
+    }
 }
