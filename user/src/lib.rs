@@ -1,7 +1,8 @@
 use crate::pb::user::user_service_server::UserService;
 use crate::pb::user::{
     BatchGetUsersRequest, BatchGetUsersResponse, CreateUserRequest, CreateUserResponse,
-    FollowUserRequest, FollowUserResponse, GetUserByIdRequest, GetUserByIdResponse,
+    FollowUserRequest, FollowUserResponse, GetFansCountRequest, GetFansCountResponse,
+    GetFollowsCountRequest, GetFollowsCountResponse, GetUserByIdRequest, GetUserByIdResponse,
     SendRegisterEmailCodeRequest, SendRegisterEmailCodeResponse, UnfollowUserRequest,
     UnfollowUserResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest, VerifyResponse,
 };
@@ -81,5 +82,19 @@ impl UserService for UserSrv {
         request: Request<UnfollowUserRequest>,
     ) -> Result<Response<UnfollowUserResponse>, Status> {
         self.unfollow_user(request.into_inner()).await
+    }
+
+    async fn get_follows_count(
+        &self,
+        request: Request<GetFollowsCountRequest>,
+    ) -> Result<Response<GetFollowsCountResponse>, Status> {
+        self.get_follows_count(request.into_inner()).await
+    }
+
+    async fn get_fans_count(
+        &self,
+        request: Request<GetFansCountRequest>,
+    ) -> Result<Response<GetFansCountResponse>, Status> {
+        self.get_fans_count(request.into_inner()).await
     }
 }

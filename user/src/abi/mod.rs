@@ -93,4 +93,20 @@ impl UserSrv {
             .await?;
         Ok(Response::new(UnfollowUserResponse {}))
     }
+
+    pub async fn get_follows_count(
+        &self,
+        request: pb::user::GetFollowsCountRequest,
+    ) -> Result<Response<pb::user::GetFollowsCountResponse>, Status> {
+        let count = self.user_repo.get_follows_count(request.user_id).await?;
+        Ok(Response::new(pb::user::GetFollowsCountResponse { count }))
+    }
+
+    pub async fn get_fans_count(
+        &self,
+        request: pb::user::GetFansCountRequest,
+    ) -> Result<Response<pb::user::GetFansCountResponse>, Status> {
+        let count = self.user_repo.get_fans_count(request.user_id).await?;
+        Ok(Response::new(pb::user::GetFansCountResponse { count }))
+    }
 }

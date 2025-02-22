@@ -366,6 +366,34 @@ impl UserRepo {
 
         Ok(())
     }
+
+    pub async fn get_follows_count(&self, user_id: i64) -> Result<i64, UserServiceError> {
+        let count: (i64,) = sqlx::query_as(
+            r#"
+            SELECT count(*) FROM follow_relations
+            WHERE follower = $1 AND deleted_at IS NULL
+            "#,
+        )
+        .bind(user_id)
+        .fetch_one(&self.db)
+        .await?;
+
+        Ok(count.0)
+    }
+
+    pub async fn get_fans_count(&self, user_id: i64) -> Result<i64, UserServiceError> {
+        let count: (i64,) = sqlx::query_as(
+            r#"
+            SELECT count(*) FROM follow_relations
+            WHERE followee = $1 AND deleted_at IS NULL
+            "#,
+        )
+        .bind(user_id)
+        .fetch_one(&self.db)
+        .await?;
+
+        Ok(count.0)
+    }
 }
 
 // 使用邮箱发送验证码

@@ -13,6 +13,24 @@ service UserService {
   rpc BatchGetUsers(BatchGetUsersRequest) returns (BatchGetUsersResponse);
   rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
   rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
+  rpc GetFollowsCount(GetFollowsCountRequest) returns (GetFollowsCountResponse);
+  rpc GetFansCount(GetFansCountRequest) returns (GetFansCountResponse);
+}
+
+message GetFollowsCountRequest {
+  int64 user_id = 1;
+}
+
+message GetFollowsCountResponse {
+  int64 count = 1;
+}
+
+message GetFansCountRequest {
+  int64 user_id = 1;
+}
+
+message GetFansCountResponse {
+  int64 count = 1;
 }
 
 message FollowUserRequest {

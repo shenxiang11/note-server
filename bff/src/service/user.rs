@@ -147,4 +147,24 @@ impl UserSrv {
 
         Ok(())
     }
+
+    pub async fn get_followers_count(&self, user_id: i64) -> anyhow::Result<i64> {
+        let mut client = self.client.clone();
+        let resp = client
+            .get_follows_count(user::pb::user::GetFollowsCountRequest { user_id })
+            .await?
+            .into_inner();
+
+        Ok(resp.count)
+    }
+
+    pub async fn get_fans_count(&self, user_id: i64) -> anyhow::Result<i64> {
+        let mut client = self.client.clone();
+        let resp = client
+            .get_fans_count(user::pb::user::GetFansCountRequest { user_id })
+            .await?
+            .into_inner();
+
+        Ok(resp.count)
+    }
 }
