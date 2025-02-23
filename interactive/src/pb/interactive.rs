@@ -84,6 +84,28 @@ pub struct BatchGetIsLikedResponse {
     #[prost(message, repeated, tag = "1")]
     pub results: ::prost::alloc::vec::Vec<BizIdsAndUserIdsAndIsLiked>,
 }
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct CollectRequest {
+    #[prost(enumeration = "UserCollectsBiz", tag = "1")]
+    pub biz: i32,
+    #[prost(int64, tag = "2")]
+    pub user_id: i64,
+    #[prost(int64, tag = "3")]
+    pub biz_id: i64,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct CollectResponse {}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct UncollectRequest {
+    #[prost(enumeration = "UserCollectsBiz", tag = "1")]
+    pub biz: i32,
+    #[prost(int64, tag = "2")]
+    pub user_id: i64,
+    #[prost(int64, tag = "3")]
+    pub biz_id: i64,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct UncollectResponse {}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum CountBiz {
@@ -144,6 +166,32 @@ impl UserLikesBiz {
             "USER_LIKES_UNKNOWN" => Some(Self::UserLikesUnknown),
             "USER_LIKES_NOTE" => Some(Self::UserLikesNote),
             "USER_LIKES_COMMENT" => Some(Self::UserLikesComment),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum UserCollectsBiz {
+    UserCollectsUnknown = 0,
+    UserCollectsNote = 1,
+}
+impl UserCollectsBiz {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::UserCollectsUnknown => "USER_COLLECTS_UNKNOWN",
+            Self::UserCollectsNote => "USER_COLLECTS_NOTE",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "USER_COLLECTS_UNKNOWN" => Some(Self::UserCollectsUnknown),
+            "USER_COLLECTS_NOTE" => Some(Self::UserCollectsNote),
             _ => None,
         }
     }
@@ -381,6 +429,54 @@ pub mod interactive_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        pub async fn collect(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CollectRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::CollectResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/interactive.InteractiveService/Collect",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("interactive.InteractiveService", "Collect"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn uncollect(
+            &mut self,
+            request: impl tonic::IntoRequest<super::UncollectRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UncollectResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/interactive.InteractiveService/Uncollect",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("interactive.InteractiveService", "Uncollect"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -430,6 +526,17 @@ pub mod interactive_service_server {
             request: tonic::Request<super::BatchGetIsLikedRequest>,
         ) -> std::result::Result<
             tonic::Response<super::BatchGetIsLikedResponse>,
+            tonic::Status,
+        >;
+        async fn collect(
+            &self,
+            request: tonic::Request<super::CollectRequest>,
+        ) -> std::result::Result<tonic::Response<super::CollectResponse>, tonic::Status>;
+        async fn uncollect(
+            &self,
+            request: tonic::Request<super::UncollectRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UncollectResponse>,
             tonic::Status,
         >;
     }
@@ -768,6 +875,96 @@ pub mod interactive_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = BatchGetIsLikedSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/interactive.InteractiveService/Collect" => {
+                    #[allow(non_camel_case_types)]
+                    struct CollectSvc<T: InteractiveService>(pub Arc<T>);
+                    impl<
+                        T: InteractiveService,
+                    > tonic::server::UnaryService<super::CollectRequest>
+                    for CollectSvc<T> {
+                        type Response = super::CollectResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CollectRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as InteractiveService>::collect(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = CollectSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/interactive.InteractiveService/Uncollect" => {
+                    #[allow(non_camel_case_types)]
+                    struct UncollectSvc<T: InteractiveService>(pub Arc<T>);
+                    impl<
+                        T: InteractiveService,
+                    > tonic::server::UnaryService<super::UncollectRequest>
+                    for UncollectSvc<T> {
+                        type Response = super::UncollectResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::UncollectRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as InteractiveService>::uncollect(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = UncollectSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

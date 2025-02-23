@@ -1,6 +1,9 @@
 use anyhow::Result;
 use interactive::pb::interactive_service_client::InteractiveServiceClient;
-use interactive::pb::{CountBiz, GetCountRequest, LikeRequest, UnlikeRequest, UserLikesBiz};
+use interactive::pb::{
+    CollectRequest, CountBiz, GetCountRequest, LikeRequest, UncollectRequest, UnlikeRequest,
+    UserCollectsBiz, UserLikesBiz,
+};
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -28,6 +31,32 @@ impl InteractiveSrv {
         Self {
             inner: Arc::new(InteractiveSrvInner { client }),
         }
+    }
+
+    pub async fn collect(&self, user_id: i64, biz: UserCollectsBiz, biz_id: i64) -> Result<()> {
+        let mut client = self.client.clone();
+        client
+            .collect(CollectRequest {
+                biz: biz as i32,
+                user_id,
+                biz_id,
+            })
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn uncollect(&self, user_id: i64, biz: UserCollectsBiz, biz_id: i64) -> Result<()> {
+        let mut client = self.client.clone();
+        client
+            .uncollect(UncollectRequest {
+                biz: biz as i32,
+                user_id,
+                biz_id,
+            })
+            .await?;
+
+        Ok(())
     }
 
     pub async fn like(&self, user_id: i64, biz: UserLikesBiz, biz_id: i64) -> Result<()> {

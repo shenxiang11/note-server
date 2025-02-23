@@ -1,5 +1,6 @@
 use anyhow::Result;
 use interactive::config::AppConfig;
+use interactive::consumer::note_collect_consumer::NoteCollectConsumer;
 use interactive::consumer::note_comment_consumer::NoteCommentConsumer;
 use interactive::consumer::note_like_consumer::NoteLikeConsumer;
 use interactive::consumer::note_read_consumer::NoteReadConsumer;
@@ -50,12 +51,22 @@ async fn main() -> Result<()> {
         }
     });
 
-    let interactive_repo = InteractiveRepo::new(db, db_read);
+    let interactive_repo = InteractiveRepo::new(db.clone(), db_read.clone());
     let cfg = app_config.clone();
     tokio::spawn(async move {
         let note_like_consumer =
             NoteLikeConsumer::new(cfg.kafka.brokers.clone(), interactive_repo.clone());
         if let Err(e) = note_like_consumer.consume() {
+            debug!("failed to consume note comment message: {}", e);
+        }
+    });
+
+    let interactive_repo = InteractiveRepo::new(db, db_read);
+    let cfg = app_config.clone();
+    tokio::spawn(async move {
+        let note_collect_consumer =
+            NoteCollectConsumer::new(cfg.kafka.brokers.clone(), interactive_repo.clone());
+        if let Err(e) = note_collect_consumer.consume() {
             debug!("failed to consume note comment message: {}", e);
         }
     });

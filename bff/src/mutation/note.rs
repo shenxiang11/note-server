@@ -2,7 +2,10 @@ use crate::dto::note::NoteStatus;
 use crate::util::AuthGuard;
 use crate::AppState;
 use async_graphql::{Context, InputObject, Object};
-use interactive::model::{NoteCommentMessage, NoteLikeMessage};
+use interactive::model::{
+    NoteCollectMessage, NoteCommentMessage, NoteLikeMessage, UserCollectsBiz,
+};
+use interactive::pb::UserCollectsBiz::UserCollectsNote;
 use interactive::pb::UserLikesBiz;
 use serde::{Deserialize, Serialize};
 use tracing::error;
@@ -48,6 +51,76 @@ impl NoteMutation {
     }
 
     #[graphql(guard = "AuthGuard")]
+    pub async fn collect_note(&self, ctx: &Context<'_>, id: i64) -> async_graphql::Result<String> {
+        let state = ctx.data::<AppState>()?.clone();
+        let user_id = ctx.data::<i64>()?.clone();
+        let _ = state
+            .interactive_srv
+            .collect(user_id, UserCollectsNote, id)
+            .await?;
+
+        tokio::spawn(async move {
+            let data = NoteCollectMessage {
+                biz_id: id,
+                user_id,
+                collect: true,
+            };
+            let data = serde_json::to_string(&data);
+            if let Err(e) = data {
+                error!("failed to serialize note like message: {}", e);
+                return;
+            }
+            let ret = state.message_queue.produce_message(
+                id.to_string().as_bytes(),
+                String::as_bytes(&data.unwrap_or_default()),
+                "NoteCollect",
+            );
+            if let Err(e) = ret {
+                error!("failed to produce message: {}", e);
+            }
+        });
+
+        Ok("success".to_string())
+    }
+
+    #[graphql(guard = "AuthGuard")]
+    pub async fn cancel_collect_note(
+        &self,
+        ctx: &Context<'_>,
+        id: i64,
+    ) -> async_graphql::Result<String> {
+        let state = ctx.data::<AppState>()?.clone();
+        let user_id = ctx.data::<i64>()?.clone();
+        let _ = state
+            .interactive_srv
+            .uncollect(user_id, UserCollectsNote, id)
+            .await?;
+
+        tokio::spawn(async move {
+            let data = NoteCollectMessage {
+                biz_id: id,
+                user_id,
+                collect: false,
+            };
+            let data = serde_json::to_string(&data);
+            if let Err(e) = data {
+                error!("failed to serialize note like message: {}", e);
+                return;
+            }
+            let ret = state.message_queue.produce_message(
+                id.to_string().as_bytes(),
+                String::as_bytes(&data.unwrap_or_default()),
+                "NoteCollect",
+            );
+            if let Err(e) = ret {
+                error!("failed to produce message: {}", e);
+            }
+        });
+
+        Ok("success".to_string())
+    }
+
+    #[graphql(guard = "AuthGuard")]
     pub async fn like_note(&self, ctx: &Context<'_>, id: i64) -> async_graphql::Result<String> {
         let state = ctx.data::<AppState>()?.clone();
         let user_id = ctx.data::<i64>()?.clone();
@@ -64,7 +137,7 @@ impl NoteMutation {
             };
             let data = serde_json::to_string(&data);
             if let Err(e) = data {
-                error!("failed to serialize note comment message: {}", e);
+                error!("failed to serialize note like message: {}", e);
                 return;
             }
             let ret = state.message_queue.produce_message(
@@ -84,7 +157,7 @@ impl NoteMutation {
     pub async fn unlike_note(&self, ctx: &Context<'_>, id: i64) -> async_graphql::Result<String> {
         let state = ctx.data::<AppState>()?.clone();
         let user_id = ctx.data::<i64>()?.clone();
-        let ret = state
+        let _ = state
             .interactive_srv
             .unlike(user_id, UserLikesBiz::UserLikesNote, id)
             .await?;
@@ -97,7 +170,7 @@ impl NoteMutation {
             };
             let data = serde_json::to_string(&data);
             if let Err(e) = data {
-                error!("failed to serialize note comment message: {}", e);
+                error!("failed to serialize note like message: {}", e);
                 return;
             }
             let ret = state.message_queue.produce_message(

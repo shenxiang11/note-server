@@ -1,4 +1,6 @@
-use crate::model::{CountBiz, Counter, NoteReadMessage, UserHistoryBiz, UserLikesBiz};
+use crate::model::{
+    CountBiz, Counter, NoteReadMessage, UserCollectsBiz, UserHistoryBiz, UserLikesBiz,
+};
 use anyhow::Result;
 use sqlx::{Database, PgPool, Row};
 use std::collections::HashMap;
@@ -208,6 +210,60 @@ impl InteractiveRepo {
 
         if ret.rows_affected() == 0 {
             return Err(anyhow::anyhow!("cancel_like failed"));
+        }
+
+        Ok(())
+    }
+
+    pub async fn save_collect(
+        &self,
+        biz: UserCollectsBiz,
+        biz_id: i64,
+        user_id: i64,
+    ) -> Result<()> {
+        let ret = sqlx::query(
+            r#"
+            INSERT INTO user_collects (biz, biz_id, user_id)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (biz, biz_id, user_id)
+            DO UPDATE SET deleted_at = NULL, updated_at = now()
+            WHERE user_collects.deleted_at IS NOT NULL;
+            "#,
+        )
+        .bind(biz)
+        .bind(biz_id)
+        .bind(user_id)
+        .execute(&self.db)
+        .await?;
+
+        if ret.rows_affected() == 0 {
+            return Err(anyhow::anyhow!("save_collect failed"));
+        }
+
+        Ok(())
+    }
+
+    pub async fn cancel_collect(
+        &self,
+        biz: UserCollectsBiz,
+        biz_id: i64,
+        user_id: i64,
+    ) -> Result<()> {
+        let ret = sqlx::query(
+            r#"
+            UPDATE user_collects
+            SET deleted_at = now()
+            WHERE biz = $1 AND biz_id = $2 AND user_id = $3 AND deleted_at IS NULL;
+            "#,
+        )
+        .bind(biz)
+        .bind(biz_id)
+        .bind(user_id)
+        .execute(&self.db)
+        .await?;
+
+        if ret.rows_affected() == 0 {
+            return Err(anyhow::anyhow!("cancel_collect failed"));
         }
 
         Ok(())

@@ -120,3 +120,19 @@ CREATE TABLE IF NOT EXISTS follow_relations (
     FOREIGN KEY (follower) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (followee) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
+-- Create User Like Biz Types
+CREATE TYPE user_collects_biz AS ENUM ('note');
+
+-- Create User Like Table
+CREATE TABLE IF NOT EXISTS user_collects (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    biz user_collects_biz NOT NULL,
+    biz_id BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (user_id, biz, biz_id)
+);

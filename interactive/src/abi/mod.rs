@@ -1,8 +1,9 @@
-use crate::model::{CountBiz, UserLikesBiz};
+use crate::model::{CountBiz, UserCollectsBiz, UserLikesBiz};
 use crate::pb::{
     BatchGetCountRequest, BatchGetCountResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse,
-    BizIdsAndUserIdsAndIsLiked, GetCountRequest, GetCountResponse, LikeRequest, LikeResponse,
-    SaveCountRequest, SaveCountResponse, UnlikeRequest, UnlikeResponse,
+    BizIdsAndUserIdsAndIsLiked, CollectRequest, CollectResponse, GetCountRequest, GetCountResponse,
+    LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse, UncollectRequest,
+    UncollectResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::InteractiveSrv;
 use tonic::{Response, Status};
@@ -112,6 +113,45 @@ impl InteractiveSrv {
 
         match ret {
             Ok(_) => Ok(Response::new(UnlikeResponse {})),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn collect(&self, req: CollectRequest) -> Result<Response<CollectResponse>, Status> {
+        let ret: Result<UserCollectsBiz, _> = req.biz.try_into();
+        let biz = match ret {
+            Ok(biz) => biz,
+            Err(e) => return Err(Status::invalid_argument(e.to_string())),
+        };
+
+        let ret = self
+            .interactive_repo
+            .save_collect(biz, req.biz_id, req.user_id)
+            .await;
+
+        match ret {
+            Ok(_) => Ok(Response::new(CollectResponse {})),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn uncollect(
+        &self,
+        req: UncollectRequest,
+    ) -> Result<Response<UncollectResponse>, Status> {
+        let ret: Result<UserCollectsBiz, _> = req.biz.try_into();
+        let biz = match ret {
+            Ok(biz) => biz,
+            Err(e) => return Err(Status::invalid_argument(e.to_string())),
+        };
+
+        let ret = self
+            .interactive_repo
+            .cancel_collect(biz, req.biz_id, req.user_id)
+            .await;
+
+        match ret {
+            Ok(_) => Ok(Response::new(UncollectResponse {})),
             Err(e) => Err(Status::internal(e.to_string())),
         }
     }

@@ -45,6 +45,13 @@ pub struct NoteLikeMessage {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NoteCollectMessage {
+    pub biz_id: i64,
+    pub user_id: i64,
+    pub collect: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteReadMessage {
     pub biz_id: i64,
     pub user_id: Option<i64>,
@@ -90,6 +97,24 @@ impl TryFrom<i32> for UserLikesBiz {
             1 => Ok(UserLikesBiz::Note),
             2 => Ok(UserLikesBiz::Comment),
             _ => Err("invalid count biz"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, sqlx::Type, Copy, Eq)]
+#[sqlx(type_name = "user_collects_biz", rename_all = "snake_case")]
+#[serde(rename_all(serialize = "camelCase", deserialize = "camelCase"))]
+pub enum UserCollectsBiz {
+    Note,
+}
+
+impl TryFrom<i32> for UserCollectsBiz {
+    type Error = &'static str;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            1 => Ok(UserCollectsBiz::Note),
+            _ => Err("invalid collects biz"),
         }
     }
 }
