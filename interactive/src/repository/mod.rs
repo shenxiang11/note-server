@@ -103,10 +103,6 @@ impl InteractiveRepo {
     }
 
     pub async fn save_count(&self, biz: CountBiz, biz_id: i64, n: i64) -> Result<()> {
-        println!(
-            "save_count: biz: {:?}, biz_id: {:?}, n: {:?}",
-            biz, biz_id, n
-        );
         let ret = sqlx::query(
             r#"
             INSERT INTO counters (biz, biz_id, count)

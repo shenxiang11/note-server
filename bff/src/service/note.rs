@@ -4,8 +4,8 @@ use crate::util::time::PbTimestamp;
 use anyhow::Result;
 use note::pb::note::get_published_note_response::Note::{NormalNote, VideoNote};
 use note::pb::note::note_service_client::NoteServiceClient;
-use note::pb::note::CreateOrUpdateRequest;
 use note::pb::note::ImageList;
+use note::pb::note::{CreateOrUpdateRequest, GetUserPublishedNoteIdsRequest};
 use std::ops::Deref;
 use std::sync::Arc;
 use tonic::transport::Channel;
@@ -67,6 +67,54 @@ impl NoteSrv {
             }),
             _ => unimplemented!(),
         }
+    }
+
+    pub async fn get_user_published_notes(
+        &self,
+        page_size: i64,
+        cursor: Option<i64>,
+        user_id: i64,
+    ) -> Result<Vec<Note>> {
+        let mut client = self.client.clone();
+        let request = tonic::Request::new(note::pb::note::GetUserPublishedNotesRequest {
+            page_size,
+            cursor_id: cursor,
+            user_id,
+        });
+        let response = client.get_user_published_notes(request).await?;
+        let response = response.into_inner();
+        let notes = response.notes;
+        let notes = notes
+            .into_iter()
+            .map(|note| match note.note {
+                Some(NormalNote(note)) => Note {
+                    id: note.id,
+                    title: note.title,
+                    content: note.content,
+                    images: note.images.unwrap_or_default().images,
+                    video: "".to_string(),
+                    status: note.status.into(),
+                    user_id: note.user_id,
+                    created_at: PbTimestamp::from(note.created_at.unwrap_or_default()).into(),
+                    updated_at: PbTimestamp::from(note.updated_at.unwrap_or_default()).into(),
+                    r#type: NoteType::Normal,
+                },
+                Some(VideoNote(note)) => Note {
+                    id: note.id,
+                    title: note.title,
+                    content: note.content,
+                    images: vec![],
+                    video: note.video,
+                    status: note.status.into(),
+                    user_id: note.user_id,
+                    created_at: PbTimestamp::from(note.created_at.unwrap_or_default()).into(),
+                    updated_at: PbTimestamp::from(note.updated_at.unwrap_or_default()).into(),
+                    r#type: NoteType::Video,
+                },
+                _ => unimplemented!(),
+            })
+            .collect();
+        Ok(notes)
     }
 
     pub async fn get_published_notes(
@@ -139,5 +187,13 @@ impl NoteSrv {
         });
         client.create_or_update(request).await?;
         Ok(())
+    }
+
+    pub async fn get_published_note_ids_by_user(&self, user_id: i64) -> Result<Vec<i64>> {
+        let mut client = self.client.clone();
+        let request = tonic::Request::new(GetUserPublishedNoteIdsRequest { user_id });
+        let response = client.get_user_published_note_ids(request).await?;
+        let response = response.into_inner();
+        Ok(response.ids)
     }
 }

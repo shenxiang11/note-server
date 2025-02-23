@@ -30,6 +30,28 @@ impl NoteRepo {
         Ok(result)
     }
 
+    pub async fn get_user_published_notes(
+        &self,
+        page_size: i64,
+        last_id: Option<i64>,
+        user_id: i64,
+    ) -> Result<Vec<PublishedNote>> {
+        let cursor = last_id.unwrap_or_else(|| i64::MAX);
+
+        let result: Vec<PublishedNote> = sqlx::query_as(
+            r#"
+            SELECT * FROM published_notes WHERE id < $1 AND user_id = $2 ORDER BY id DESC LIMIT $3;
+            "#,
+        )
+        .bind(cursor)
+        .bind(user_id)
+        .bind(page_size)
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn get_published_notes(
         &self,
         page_size: i64,
@@ -150,5 +172,18 @@ impl NoteRepo {
 
             Ok(r)
         }
+    }
+
+    pub async fn get_user_published_note_ids(&self, user_id: i64) -> Result<Vec<i64>> {
+        let result: Vec<i64> = sqlx::query_scalar(
+            r#"
+            SELECT id FROM published_notes WHERE user_id = $1;
+            "#,
+        )
+        .bind(user_id)
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(result)
     }
 }

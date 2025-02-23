@@ -2,6 +2,7 @@ use crate::util::time::PbTimestamp;
 use crate::AppState;
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 use chrono::{DateTime, Utc};
+use interactive::pb::CountBiz;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, SimpleObject)]
@@ -37,16 +38,45 @@ impl User {
             .get_fans_count(self.id)
             .await
             .unwrap_or_default();
-
         Ok(n)
     }
 
-    pub async fn liked_count(&self) -> i64 {
-        0
+    pub async fn liked_count(&self, ctx: &Context<'_>) -> Result<i64> {
+        let state = ctx.data::<AppState>()?;
+
+        let note_ids = state.note_srv.get_published_note_ids_by_user(self.id).await;
+        if note_ids.is_err() {
+            return Ok(0);
+        }
+        let note_ids = note_ids.unwrap_or_default();
+        let ret = state
+            .interactive_srv
+            .batch_get_count(CountBiz::CountNoteLike, note_ids)
+            .await;
+        if ret.is_err() {
+            return Ok(0);
+        }
+        let ret = ret.unwrap_or_default();
+        Ok(ret.values().fold(0, |acc, x| acc + x))
     }
 
-    pub async fn collected_count(&self) -> i64 {
-        0
+    pub async fn collected_count(&self, ctx: &Context<'_>) -> Result<i64> {
+        let state = ctx.data::<AppState>()?;
+
+        let note_ids = state.note_srv.get_published_note_ids_by_user(self.id).await;
+        if note_ids.is_err() {
+            return Ok(0);
+        }
+        let note_ids = note_ids.unwrap_or_default();
+        let ret = state
+            .interactive_srv
+            .batch_get_count(CountBiz::CountNoteCollect, note_ids)
+            .await;
+        if ret.is_err() {
+            return Ok(0);
+        }
+        let ret = ret.unwrap_or_default();
+        Ok(ret.values().fold(0, |acc, x| acc + x))
     }
 }
 

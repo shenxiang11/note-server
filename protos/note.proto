@@ -8,6 +8,26 @@ service NoteService {
   rpc CreateOrUpdate(CreateOrUpdateRequest) returns (CreateOrUpdateResponse);
   rpc GetPublishedNote(GetPublishedNoteRequest) returns (GetPublishedNoteResponse);
   rpc GetPublishedNotes(GetPublishedNotesRequest) returns (GetPublishedNotesResponse);
+  rpc GetUserPublishedNoteIds(GetUserPublishedNoteIdsRequest) returns (GetUserPublishedNoteIdsResponse);
+  rpc GetUserPublishedNotes(GetUserPublishedNotesRequest) returns (GetUserPublishedNotesResponse);
+}
+
+message GetUserPublishedNotesRequest {
+  int64 user_id = 1;
+  int64 page_size = 2;
+  optional int64 cursor_id = 3;
+}
+
+message GetUserPublishedNotesResponse {
+  repeated GetPublishedNoteResponse notes = 1;
+}
+
+message GetUserPublishedNoteIdsRequest {
+  int64 user_id = 1;
+}
+
+message GetUserPublishedNoteIdsResponse {
+  repeated int64 ids = 1;
 }
 
 message GetPublishedNotesRequest {
