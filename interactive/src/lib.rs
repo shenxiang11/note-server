@@ -1,9 +1,10 @@
 use crate::pb::interactive_service_server::InteractiveService;
 use crate::pb::{
     BatchGetCountRequest, BatchGetCountResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse,
-    CollectRequest, CollectResponse, GetCountRequest, GetCountResponse, LikeRequest, LikeResponse,
-    SaveCountRequest, SaveCountResponse, UncollectRequest, UncollectResponse, UnlikeRequest,
-    UnlikeResponse,
+    CollectRequest, CollectResponse, GetCountRequest, GetCountResponse,
+    GetUserCollectedNoteIdsRequest, GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest,
+    GetUserLikedNoteIdsResponse, LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse,
+    UncollectRequest, UncollectResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::repository::InteractiveRepo;
 use tonic::{async_trait, IntoRequest, Request, Response, Status};
@@ -78,5 +79,19 @@ impl InteractiveService for InteractiveSrv {
         request: Request<UncollectRequest>,
     ) -> Result<Response<UncollectResponse>, Status> {
         self.uncollect(request.into_inner()).await
+    }
+
+    async fn get_user_liked_note_ids(
+        &self,
+        request: Request<GetUserLikedNoteIdsRequest>,
+    ) -> Result<Response<GetUserLikedNoteIdsResponse>, Status> {
+        self.get_user_liked_note_ids(request.into_inner()).await
+    }
+
+    async fn get_user_collected_note_ids(
+        &self,
+        request: Request<GetUserCollectedNoteIdsRequest>,
+    ) -> Result<Response<GetUserCollectedNoteIdsResponse>, Status> {
+        self.get_user_collected_note_ids(request.into_inner()).await
     }
 }

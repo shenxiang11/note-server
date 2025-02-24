@@ -1,8 +1,9 @@
 use anyhow::Result;
 use interactive::pb::interactive_service_client::InteractiveServiceClient;
 use interactive::pb::{
-    CollectRequest, CountBiz, GetCountRequest, LikeRequest, UncollectRequest, UnlikeRequest,
-    UserCollectsBiz, UserLikesBiz,
+    CollectRequest, CountBiz, GetCountRequest, GetUserCollectedNoteIdsRequest,
+    GetUserLikedNoteIdsRequest, LikeRequest, UncollectRequest, UnlikeRequest, UserCollectsBiz,
+    UserLikesBiz,
 };
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -136,5 +137,43 @@ impl InteractiveSrv {
             .into_inner();
 
         Ok(resp.count)
+    }
+
+    pub async fn get_user_liked_note_ids(
+        &self,
+        user_id: i64,
+        page_size: i64,
+        cursor_id: Option<i64>,
+    ) -> Result<Vec<i64>> {
+        let mut client = self.client.clone();
+        let resp = client
+            .get_user_liked_note_ids(GetUserLikedNoteIdsRequest {
+                user_id,
+                page_size,
+                cursor_id,
+            })
+            .await?
+            .into_inner();
+
+        Ok(resp.ids)
+    }
+
+    pub async fn get_user_collected_note_ids(
+        &self,
+        user_id: i64,
+        page_size: i64,
+        cursor_id: Option<i64>,
+    ) -> Result<Vec<i64>> {
+        let mut client = self.client.clone();
+        let resp = client
+            .get_user_collected_note_ids(GetUserCollectedNoteIdsRequest {
+                user_id,
+                page_size,
+                cursor_id,
+            })
+            .await?
+            .into_inner();
+
+        Ok(resp.ids)
     }
 }

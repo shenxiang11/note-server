@@ -19,7 +19,7 @@ impl UserQuery {
     }
 
     #[graphql(guard = "AuthGuard")]
-    pub async fn user_published_notes(
+    pub async fn user_notes(
         &self,
         ctx: &Context<'_>,
         page_size: i64,
@@ -32,6 +32,42 @@ impl UserQuery {
             .note_srv
             .get_user_published_notes(page_size, cursor_id, *user_id)
             .await?;
+        Ok(notes)
+    }
+
+    #[graphql(guard = "AuthGuard")]
+    pub async fn liked_notes(
+        &self,
+        ctx: &Context<'_>,
+        page_size: i64,
+        cursor_id: Option<i64>,
+    ) -> Result<Vec<Note>> {
+        let state = ctx.data::<AppState>()?;
+        let user_id = ctx.data::<i64>()?;
+
+        let note_ids = state
+            .interactive_srv
+            .get_user_liked_note_ids(*user_id, page_size, cursor_id)
+            .await?;
+        let notes = state.note_srv.batch_get_published_notes(note_ids).await?;
+        Ok(notes)
+    }
+
+    #[graphql(guard = "AuthGuard")]
+    pub async fn collected_notes(
+        &self,
+        ctx: &Context<'_>,
+        page_size: i64,
+        cursor_id: Option<i64>,
+    ) -> Result<Vec<Note>> {
+        let state = ctx.data::<AppState>()?;
+        let user_id = ctx.data::<i64>()?;
+
+        let note_ids = state
+            .interactive_srv
+            .get_user_collected_note_ids(*user_id, page_size, cursor_id)
+            .await?;
+        let notes = state.note_srv.batch_get_published_notes(note_ids).await?;
         Ok(notes)
     }
 }

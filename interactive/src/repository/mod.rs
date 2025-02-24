@@ -264,4 +264,58 @@ impl InteractiveRepo {
 
         Ok(())
     }
+
+    pub async fn get_user_liked_note_ids(
+        &self,
+        user_id: i64,
+        page_size: i64,
+        cursor_id: Option<i64>,
+    ) -> Result<Vec<i64>> {
+        let cursor_id = cursor_id.unwrap_or(i64::MAX);
+
+        let note_ids: Vec<i64> = sqlx::query_scalar(
+            r#"
+            SELECT biz_id
+            FROM user_likes
+            WHERE biz = $1 AND user_id = $2 AND deleted_at IS NULL AND biz_id < $3
+            ORDER BY id DESC
+            LIMIT $4;
+            "#,
+        )
+        .bind(UserLikesBiz::Note)
+        .bind(user_id)
+        .bind(cursor_id)
+        .bind(page_size)
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(note_ids)
+    }
+
+    pub async fn get_user_collected_note_ids(
+        &self,
+        user_id: i64,
+        page_size: i64,
+        cursor_id: Option<i64>,
+    ) -> Result<Vec<i64>> {
+        let cursor_id = cursor_id.unwrap_or(i64::MAX);
+
+        let note_ids: Vec<i64> = sqlx::query_scalar(
+            r#"
+            SELECT biz_id
+            FROM user_collects
+            WHERE biz = $1 AND user_id = $2 AND deleted_at IS NULL AND biz_id < $3
+            ORDER BY id DESC
+            LIMIT $4;
+            "#,
+        )
+        .bind(UserCollectsBiz::Note)
+        .bind(user_id)
+        .bind(cursor_id)
+        .bind(page_size)
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(note_ids)
+    }
 }

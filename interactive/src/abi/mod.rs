@@ -2,8 +2,9 @@ use crate::model::{CountBiz, UserCollectsBiz, UserLikesBiz};
 use crate::pb::{
     BatchGetCountRequest, BatchGetCountResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse,
     BizIdsAndUserIdsAndIsLiked, CollectRequest, CollectResponse, GetCountRequest, GetCountResponse,
-    LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse, UncollectRequest,
-    UncollectResponse, UnlikeRequest, UnlikeResponse,
+    GetUserCollectedNoteIdsRequest, GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest,
+    GetUserLikedNoteIdsResponse, LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse,
+    UncollectRequest, UncollectResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::InteractiveSrv;
 use tonic::{Response, Status};
@@ -173,6 +174,42 @@ impl InteractiveSrv {
         match ret {
             Ok(counts) => {
                 let resp = BatchGetCountResponse { counts };
+                Ok(Response::new(resp))
+            }
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn get_user_liked_note_ids(
+        &self,
+        req: GetUserLikedNoteIdsRequest,
+    ) -> Result<Response<GetUserLikedNoteIdsResponse>, Status> {
+        let ids = self
+            .interactive_repo
+            .get_user_liked_note_ids(req.user_id, req.page_size, req.cursor_id)
+            .await;
+
+        match ids {
+            Ok(ids) => {
+                let resp = GetUserLikedNoteIdsResponse { ids };
+                Ok(Response::new(resp))
+            }
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn get_user_collected_note_ids(
+        &self,
+        req: GetUserCollectedNoteIdsRequest,
+    ) -> Result<Response<GetUserCollectedNoteIdsResponse>, Status> {
+        let ids = self
+            .interactive_repo
+            .get_user_collected_note_ids(req.user_id, req.page_size, req.cursor_id)
+            .await;
+
+        match ids {
+            Ok(ids) => {
+                let resp = GetUserCollectedNoteIdsResponse { ids };
                 Ok(Response::new(resp))
             }
             Err(e) => Err(Status::internal(e.to_string())),

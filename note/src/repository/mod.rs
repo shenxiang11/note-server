@@ -30,6 +30,19 @@ impl NoteRepo {
         Ok(result)
     }
 
+    pub async fn batch_get_published_notes(&self, ids: Vec<i64>) -> Result<Vec<PublishedNote>> {
+        let result: Vec<PublishedNote> = sqlx::query_as(
+            r#"
+            SELECT * FROM published_notes WHERE id = ANY($1);
+            "#,
+        )
+        .bind(ids)
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn get_user_published_notes(
         &self,
         page_size: i64,

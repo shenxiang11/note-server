@@ -10,6 +10,15 @@ service NoteService {
   rpc GetPublishedNotes(GetPublishedNotesRequest) returns (GetPublishedNotesResponse);
   rpc GetUserPublishedNoteIds(GetUserPublishedNoteIdsRequest) returns (GetUserPublishedNoteIdsResponse);
   rpc GetUserPublishedNotes(GetUserPublishedNotesRequest) returns (GetUserPublishedNotesResponse);
+  rpc BatchGetPublishedNotes(BatchGetPublishedNotesRequest) returns (BatchGetPublishedNotesResponse);
+}
+
+message BatchGetPublishedNotesRequest {
+  repeated int64 ids = 1;
+}
+
+message BatchGetPublishedNotesResponse {
+  repeated GetPublishedNoteResponse notes = 1;
 }
 
 message GetUserPublishedNotesRequest {
