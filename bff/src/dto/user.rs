@@ -1,5 +1,7 @@
+use crate::data_loader::user_followed_loader::UserFollowedLoader;
 use crate::util::time::PbTimestamp;
 use crate::AppState;
+use async_graphql::dataloader::DataLoader;
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 use chrono::{DateTime, Utc};
 use interactive::pb::CountBiz;
@@ -20,6 +22,25 @@ pub struct User {
 
 #[ComplexObject]
 impl User {
+    pub async fn is_self(&self, ctx: &Context<'_>) -> Result<bool> {
+        let user_id = ctx.data::<i64>()?;
+
+        Ok(*user_id == self.id)
+    }
+
+    pub async fn is_followed(&self, ctx: &Context<'_>) -> Result<bool> {
+        let user_id = ctx.data::<i64>();
+
+        match user_id {
+            Ok(user_id) => {
+                let loader = ctx.data::<DataLoader<UserFollowedLoader>>()?;
+                let ret = loader.load_one((*user_id, self.id)).await?;
+                Ok(ret.unwrap_or_default())
+            }
+            Err(_) => Ok(false),
+        }
+    }
+
     pub async fn follows_count(&self, ctx: &Context<'_>) -> Result<i64> {
         let state = ctx.data::<AppState>()?;
         let n = state

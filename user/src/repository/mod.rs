@@ -11,7 +11,7 @@ use lettre::{SmtpTransport, Transport};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use redis::{AsyncCommands, RedisResult, Script};
-use sqlx::{Error, PgPool};
+use sqlx::{Error, PgPool, Row};
 use std::collections::HashMap;
 
 pub struct UserRepo {
@@ -240,7 +240,7 @@ impl UserRepo {
             .fetch_all(&self.db)
             .await?;
 
-        let mut users = users.into_iter().map(|user| (user.id, user)).collect();
+        let users = users.into_iter().map(|user| (user.id, user)).collect();
 
         Ok(users)
     }
@@ -319,6 +319,40 @@ impl UserRepo {
         // 其实超过 9999 也没关系，只是流水号会变长 1 位，每小时不超过 9999 个注册就不会有此问题
         let serial_no = format!("{}{:0>4}", date_prefix, no);
         Ok(serial_no)
+    }
+
+    pub async fn batch_get_is_followed(
+        &self,
+        follower_followee_ids: Vec<(i64, i64)>,
+    ) -> Result<HashMap<(i64, i64), bool>, UserServiceError> {
+        let mut is_followed = HashMap::new();
+
+        let follower_followee_ids = follower_followee_ids
+            .iter()
+            .map(|(follower, followee)| format!("({}, {})", follower, followee))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let query_str = format!(
+            r#"
+            SELECT *
+            FROM follow_relations
+            WHERE (follower, followee) IN ({}) AND deleted_at IS NULL;
+            "#,
+            follower_followee_ids
+        );
+
+        let _ = sqlx::query(query_str.as_str())
+            .fetch_all(&self.db_read)
+            .await?
+            .iter()
+            .for_each(|row| {
+                let follower: i64 = row.get("follower");
+                let followee: i64 = row.get("followee");
+                is_followed.insert((follower, followee), true);
+            });
+
+        Ok(is_followed)
     }
 
     pub async fn follow_user(&self, follower: i64, followee: i64) -> Result<(), UserServiceError> {

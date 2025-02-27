@@ -46,6 +46,9 @@ impl NoteSrv {
                                 id: note.id,
                                 title: note.title,
                                 content: note.content.unwrap_or_default(),
+                                images: Some(ImageList {
+                                    images: note.images,
+                                }),
                                 video: note.video.unwrap_or_default(),
                                 status: note.status as i32,
                                 user_id: note.user_id,
@@ -109,6 +112,9 @@ impl NoteSrv {
                                 id: note.id,
                                 title: note.title,
                                 content: note.content.unwrap_or_default(),
+                                images: Some(ImageList {
+                                    images: note.images,
+                                }),
                                 video: note.video.unwrap_or_default(),
                                 status: note.status as i32,
                                 user_id: note.user_id,
@@ -172,6 +178,9 @@ impl NoteSrv {
                                 id: note.id,
                                 title: note.title,
                                 content: note.content.unwrap_or_default(),
+                                images: Some(ImageList {
+                                    images: note.images,
+                                }),
                                 video: note.video.unwrap_or_default(),
                                 status: note.status as i32,
                                 user_id: note.user_id,
@@ -232,6 +241,9 @@ impl NoteSrv {
                             id: note.id,
                             title: note.title,
                             content: note.content.unwrap_or_default(),
+                            images: Some(ImageList {
+                                images: note.images,
+                            }),
                             video: note.video.unwrap_or_default(),
                             status: note.status as i32,
                             user_id: note.user_id,

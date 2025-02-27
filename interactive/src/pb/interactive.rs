@@ -112,6 +112,27 @@ pub struct BatchGetIsLikedResponse {
     #[prost(message, repeated, tag = "1")]
     pub results: ::prost::alloc::vec::Vec<BizIdsAndUserIdsAndIsLiked>,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetIsCollectedRequest {
+    #[prost(enumeration = "UserCollectsBiz", tag = "1")]
+    pub biz: i32,
+    #[prost(message, repeated, tag = "2")]
+    pub query: ::prost::alloc::vec::Vec<BizIdsAndUserIds>,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct BizIdsAndUserIdsAndIsCollected {
+    #[prost(int64, tag = "1")]
+    pub biz_id: i64,
+    #[prost(int64, tag = "2")]
+    pub user_id: i64,
+    #[prost(bool, tag = "3")]
+    pub is_collected: bool,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchGetIsCollectedResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub results: ::prost::alloc::vec::Vec<BizIdsAndUserIdsAndIsCollected>,
+}
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct CollectRequest {
     #[prost(enumeration = "UserCollectsBiz", tag = "1")]
@@ -457,6 +478,35 @@ pub mod interactive_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        pub async fn batch_get_is_collected(
+            &mut self,
+            request: impl tonic::IntoRequest<super::BatchGetIsCollectedRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetIsCollectedResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/interactive.InteractiveService/BatchGetIsCollected",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "interactive.InteractiveService",
+                        "BatchGetIsCollected",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn collect(
             &mut self,
             request: impl tonic::IntoRequest<super::CollectRequest>,
@@ -612,6 +662,13 @@ pub mod interactive_service_server {
             request: tonic::Request<super::BatchGetIsLikedRequest>,
         ) -> std::result::Result<
             tonic::Response<super::BatchGetIsLikedResponse>,
+            tonic::Status,
+        >;
+        async fn batch_get_is_collected(
+            &self,
+            request: tonic::Request<super::BatchGetIsCollectedRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchGetIsCollectedResponse>,
             tonic::Status,
         >;
         async fn collect(
@@ -975,6 +1032,55 @@ pub mod interactive_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = BatchGetIsLikedSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/interactive.InteractiveService/BatchGetIsCollected" => {
+                    #[allow(non_camel_case_types)]
+                    struct BatchGetIsCollectedSvc<T: InteractiveService>(pub Arc<T>);
+                    impl<
+                        T: InteractiveService,
+                    > tonic::server::UnaryService<super::BatchGetIsCollectedRequest>
+                    for BatchGetIsCollectedSvc<T> {
+                        type Response = super::BatchGetIsCollectedResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::BatchGetIsCollectedRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as InteractiveService>::batch_get_is_collected(
+                                        &inner,
+                                        request,
+                                    )
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = BatchGetIsCollectedSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

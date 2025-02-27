@@ -13,13 +13,14 @@ impl CommentQuery {
         ctx: &Context<'_>,
         note_id: i64,
         min_id: Option<i64>,
+        limit: i64,
     ) -> Result<Vec<Comment>> {
         let min_id = min_id.unwrap_or(i64::MAX);
         let state = ctx.data::<AppState>()?;
 
         let ret = state
             .comment_srv
-            .find_comments(CommentBiz::CommentNote, note_id, min_id, 10)
+            .find_comments(CommentBiz::CommentNote, note_id, min_id, limit)
             .await?;
 
         Ok(ret)

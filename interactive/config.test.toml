@@ -1,7 +1,7 @@
 [server]
 port = 50001
-postgres_url = "postgresql://user:password@localhost:5432/postgres"
-postgres_url_read = "postgresql://user:password@localhost:5432/postgres"
+postgres_url = "postgresql://user:password@localhost:15432/postgres"
+postgres_url_read = "postgresql://user:password@localhost:15432/postgres"
 redis_url = "redis://127.0.0.1:6379"
 request_id_header = "X-Request-ID"
 

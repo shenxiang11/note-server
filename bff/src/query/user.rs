@@ -9,12 +9,17 @@ pub(crate) struct UserQuery;
 
 #[Object]
 impl UserQuery {
-    #[graphql(guard = "AuthGuard")]
-    pub async fn profile(&self, ctx: &Context<'_>) -> Result<User> {
+    pub async fn profile(&self, ctx: &Context<'_>, uid: Option<i64>) -> Result<User> {
         let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>()?;
+        let user_id = ctx.data::<i64>();
 
-        let user = state.user_srv.get_user_by_id(*user_id).await?;
+        if uid.is_none() && user_id.is_err() {
+            return Err("user_id is required".into());
+        }
+
+        let user_id = uid.unwrap_or(*user_id.unwrap_or_else(|_| &-1));
+
+        let user = state.user_srv.get_user_by_id(user_id).await?;
         Ok(user)
     }
 

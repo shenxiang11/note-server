@@ -1,5 +1,6 @@
 // use crate::dto::user::User;
 use crate::data_loader::note_collected_count_loader::NoteCollectedCountLoader;
+use crate::data_loader::note_collected_loader::NoteCollectedLoader;
 use crate::data_loader::note_comments_count_loader::NoteCommentsCountLoader;
 use crate::data_loader::note_liked_loader::NoteLikedLoader;
 use crate::data_loader::note_likes_count_loader::NoteLikesCountLoader;
@@ -78,7 +79,15 @@ impl Note {
     }
 
     pub async fn collected(&self, ctx: &Context<'_>) -> Result<bool> {
-        Ok(false)
+        let user_id = ctx.data::<i64>();
+        match user_id {
+            Ok(user_id) => {
+                let loader = ctx.data::<DataLoader<NoteCollectedLoader>>()?;
+                let ret = loader.load_one((self.id, *user_id)).await?;
+                Ok(ret.unwrap_or_default())
+            }
+            Err(_) => Ok(false),
+        }
     }
 
     pub async fn collected_count(&self, ctx: &Context<'_>) -> Result<i64> {

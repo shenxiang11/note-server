@@ -79,13 +79,13 @@ impl UserMutation {
         ctx: &Context<'_>,
         #[graphql(validator(email))] email: String,
         password: String,
-    ) -> Result<String> {
+    ) -> Result<User> {
         let state = ctx.data::<AppState>()?;
 
         let user = state.user_srv.verify(email, password).await?;
         ctx.insert_http_header("token", state.jwt_handler.encode(user.id)?);
 
-        Ok("".to_string())
+        Ok(user)
     }
 
     // 用户注册

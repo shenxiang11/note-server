@@ -1,15 +1,50 @@
 use crate::model::{CountBiz, UserCollectsBiz, UserLikesBiz};
 use crate::pb::{
-    BatchGetCountRequest, BatchGetCountResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse,
-    BizIdsAndUserIdsAndIsLiked, CollectRequest, CollectResponse, GetCountRequest, GetCountResponse,
-    GetUserCollectedNoteIdsRequest, GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest,
-    GetUserLikedNoteIdsResponse, LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse,
-    UncollectRequest, UncollectResponse, UnlikeRequest, UnlikeResponse,
+    BatchGetCountRequest, BatchGetCountResponse, BatchGetIsCollectedRequest,
+    BatchGetIsCollectedResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse,
+    BizIdsAndUserIdsAndIsCollected, BizIdsAndUserIdsAndIsLiked, CollectRequest, CollectResponse,
+    GetCountRequest, GetCountResponse, GetUserCollectedNoteIdsRequest,
+    GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest, GetUserLikedNoteIdsResponse,
+    LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse, UncollectRequest,
+    UncollectResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::InteractiveSrv;
 use tonic::{Response, Status};
 
 impl InteractiveSrv {
+    pub async fn batch_get_is_collected(
+        &self,
+        req: BatchGetIsCollectedRequest,
+    ) -> Result<Response<BatchGetIsCollectedResponse>, Status> {
+        let ret: Result<UserCollectsBiz, _> = req.biz.try_into();
+        let biz = match ret {
+            Ok(biz) => biz,
+            Err(e) => return Err(Status::invalid_argument(e.to_string())),
+        };
+        let biz_ids_and_user_ids = req.query.iter().map(|q| (q.biz_id, q.user_id)).collect();
+        let ret = self
+            .interactive_repo
+            .batch_get_is_collected(biz, biz_ids_and_user_ids)
+            .await;
+
+        match ret {
+            Ok(is_collected) => {
+                let resp = BatchGetIsCollectedResponse {
+                    results: is_collected
+                        .iter()
+                        .map(|(k, v)| BizIdsAndUserIdsAndIsCollected {
+                            biz_id: k.0,
+                            user_id: k.1,
+                            is_collected: *v,
+                        })
+                        .collect(),
+                };
+                Ok(Response::new(resp))
+            }
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
     pub async fn batch_get_is_liked(
         &self,
         req: BatchGetIsLikedRequest,

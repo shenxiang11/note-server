@@ -1,10 +1,11 @@
 use crate::pb::user::user_service_server::UserService;
 use crate::pb::user::{
-    BatchGetUsersRequest, BatchGetUsersResponse, CreateUserRequest, CreateUserResponse,
-    FollowUserRequest, FollowUserResponse, GetFansCountRequest, GetFansCountResponse,
-    GetFollowsCountRequest, GetFollowsCountResponse, GetUserByIdRequest, GetUserByIdResponse,
-    SendRegisterEmailCodeRequest, SendRegisterEmailCodeResponse, UnfollowUserRequest,
-    UnfollowUserResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest, VerifyResponse,
+    BatchGetIsFollowedRequest, BatchGetIsFollowedResponse, BatchGetUsersRequest,
+    BatchGetUsersResponse, CreateUserRequest, CreateUserResponse, FollowUserRequest,
+    FollowUserResponse, GetFansCountRequest, GetFansCountResponse, GetFollowsCountRequest,
+    GetFollowsCountResponse, GetUserByIdRequest, GetUserByIdResponse, SendRegisterEmailCodeRequest,
+    SendRegisterEmailCodeResponse, UnfollowUserRequest, UnfollowUserResponse, UpdateUserRequest,
+    UpdateUserResponse, VerifyRequest, VerifyResponse,
 };
 use crate::repository::UserRepo;
 use tonic::{async_trait, Request, Response, Status};
@@ -96,5 +97,12 @@ impl UserService for UserSrv {
         request: Request<GetFansCountRequest>,
     ) -> Result<Response<GetFansCountResponse>, Status> {
         self.get_fans_count(request.into_inner()).await
+    }
+
+    async fn batch_get_is_followed(
+        &self,
+        request: Request<BatchGetIsFollowedRequest>,
+    ) -> Result<Response<BatchGetIsFollowedResponse>, Status> {
+        self.batch_get_is_followed(request.into_inner()).await
     }
 }

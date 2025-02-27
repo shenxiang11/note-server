@@ -96,9 +96,10 @@ message VideoNote {
   int64 id = 1;
   string title = 2;
   string content = 3;
-  string video = 4;
-  NoteStatus status = 5;
-  int64 user_id = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  ImageList images = 4;
+  string video = 5;
+  NoteStatus status = 6;
+  int64 user_id = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }

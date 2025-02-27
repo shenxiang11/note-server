@@ -15,6 +15,26 @@ service UserService {
   rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
   rpc GetFollowsCount(GetFollowsCountRequest) returns (GetFollowsCountResponse);
   rpc GetFansCount(GetFansCountRequest) returns (GetFansCountResponse);
+  rpc BatchGetIsFollowed(BatchGetIsFollowedRequest) returns (BatchGetIsFollowedResponse);
+}
+
+message IsFollowedQuery {
+  int64 follower = 1;
+  int64 followee = 2;
+}
+
+message BatchGetIsFollowedRequest {
+  repeated IsFollowedQuery query = 1;
+}
+
+message IsFollowedResponse {
+  int64 follower = 1;
+  int64 followee = 2;
+  bool isFollowed = 3;
+}
+
+message BatchGetIsFollowedResponse {
+  repeated IsFollowedResponse result = 1;
 }
 
 message GetFollowsCountRequest {

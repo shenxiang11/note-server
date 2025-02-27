@@ -1,8 +1,10 @@
+use crate::pb::user::user_service_server::UserService;
 use crate::pb::user::{
-    BatchGetUsersRequest, BatchGetUsersResponse, CreateUserRequest, CreateUserResponse,
-    FollowUserRequest, FollowUserResponse, GetUserByIdRequest, GetUserByIdResponse,
-    SendRegisterEmailCodeRequest, SendRegisterEmailCodeResponse, UnfollowUserRequest,
-    UnfollowUserResponse, UpdateUserRequest, UpdateUserResponse, VerifyRequest, VerifyResponse,
+    BatchGetIsFollowedRequest, BatchGetIsFollowedResponse, BatchGetUsersRequest,
+    BatchGetUsersResponse, CreateUserRequest, CreateUserResponse, FollowUserRequest,
+    FollowUserResponse, GetUserByIdRequest, GetUserByIdResponse, SendRegisterEmailCodeRequest,
+    SendRegisterEmailCodeResponse, UnfollowUserRequest, UnfollowUserResponse, UpdateUserRequest,
+    UpdateUserResponse, VerifyRequest, VerifyResponse,
 };
 use crate::{pb, UserSrv};
 use tonic::{Response, Status};
@@ -108,5 +110,40 @@ impl UserSrv {
     ) -> Result<Response<pb::user::GetFansCountResponse>, Status> {
         let count = self.user_repo.get_fans_count(request.user_id).await?;
         Ok(Response::new(pb::user::GetFansCountResponse { count }))
+    }
+
+    pub async fn batch_get_is_followed(
+        &self,
+        request: BatchGetIsFollowedRequest,
+    ) -> Result<Response<BatchGetIsFollowedResponse>, Status> {
+        let follower_followees = request
+            .query
+            .iter()
+            .map(|q| (q.follower, q.followee))
+            .collect();
+        let ret = self
+            .user_repo
+            .batch_get_is_followed(follower_followees)
+            .await;
+
+        match ret {
+            Ok(is_followed) => {
+                let resp = BatchGetIsFollowedResponse {
+                    result: is_followed
+                        .iter()
+                        .map(|(k, v)| (k.0, k.1, *v))
+                        .map(
+                            |(follower, followee, is_followed)| pb::user::IsFollowedResponse {
+                                follower,
+                                followee,
+                                is_followed,
+                            },
+                        )
+                        .collect(),
+                };
+                Ok(Response::new(resp))
+            }
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
     }
 }

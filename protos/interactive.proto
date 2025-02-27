@@ -9,6 +9,7 @@ service InteractiveService {
   rpc Like(LikeRequest) returns (LikeResponse);
   rpc Unlike(UnlikeRequest) returns (UnlikeResponse);
   rpc BatchGetIsLiked(BatchGetIsLikedRequest) returns (BatchGetIsLikedResponse);
+  rpc BatchGetIsCollected(BatchGetIsCollectedRequest) returns (BatchGetIsCollectedResponse);
   rpc Collect(CollectRequest) returns (CollectResponse);
   rpc Uncollect(UncollectRequest) returns (UncollectResponse);
   rpc GetUserLikedNoteIds(GetUserLikedNoteIdsRequest) returns (GetUserLikedNoteIdsResponse);
@@ -109,6 +110,21 @@ message BizIdsAndUserIdsAndIsLiked {
 
 message BatchGetIsLikedResponse {
   repeated BizIdsAndUserIdsAndIsLiked results = 1;
+}
+
+message BatchGetIsCollectedRequest {
+  UserCollectsBiz biz = 1;
+  repeated BizIdsAndUserIds query = 2;
+}
+
+message BizIdsAndUserIdsAndIsCollected {
+  int64 biz_id = 1;
+  int64 user_id = 2;
+  bool is_collected = 3;
+}
+
+message BatchGetIsCollectedResponse {
+  repeated BizIdsAndUserIdsAndIsCollected results = 1;
 }
 
 enum UserCollectsBiz {

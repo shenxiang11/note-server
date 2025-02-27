@@ -38,6 +38,43 @@ impl InteractiveRepo {
         }
     }
 
+    pub async fn batch_get_is_collected(
+        &self,
+        biz: UserCollectsBiz,
+        biz_ids_and_user_ids: Vec<(i64, i64)>,
+    ) -> Result<HashMap<(i64, i64), bool>> {
+        let mut is_collected = HashMap::new();
+
+        let biz_ids_and_user_ids = biz_ids_and_user_ids
+            .iter()
+            .map(|(biz_id, user_id)| format!("({}, {})", biz_id, user_id))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let query_str = format!(
+            r#"
+            SELECT *
+            FROM user_collects
+            WHERE biz = $1 AND (biz_id, user_id) IN ({}) AND deleted_at IS NULL;
+            "#,
+            biz_ids_and_user_ids
+        );
+
+        let _ = sqlx::query(query_str.as_str())
+            .bind(biz)
+            .bind(biz_ids_and_user_ids)
+            .fetch_all(&self.db_read)
+            .await?
+            .iter()
+            .for_each(|row| {
+                let biz_id: i64 = row.get("biz_id");
+                let user_id: i64 = row.get("user_id");
+                is_collected.insert((biz_id, user_id), true);
+            });
+
+        Ok(is_collected)
+    }
+
     pub async fn batch_get_is_liked(
         &self,
         biz: UserLikesBiz,
@@ -62,7 +99,6 @@ impl InteractiveRepo {
 
         let _ = sqlx::query(query_str.as_str())
             .bind(biz)
-            .bind(biz_ids_and_user_ids)
             .fetch_all(&self.db_read)
             .await?
             .iter()

@@ -116,15 +116,17 @@ pub struct VideoNote {
     pub title: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
     pub content: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(message, optional, tag = "4")]
+    pub images: ::core::option::Option<ImageList>,
+    #[prost(string, tag = "5")]
     pub video: ::prost::alloc::string::String,
-    #[prost(enumeration = "NoteStatus", tag = "5")]
+    #[prost(enumeration = "NoteStatus", tag = "6")]
     pub status: i32,
-    #[prost(int64, tag = "6")]
+    #[prost(int64, tag = "7")]
     pub user_id: i64,
-    #[prost(message, optional, tag = "7")]
-    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(message, optional, tag = "8")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "9")]
     pub updated_at: ::core::option::Option<::prost_types::Timestamp>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]

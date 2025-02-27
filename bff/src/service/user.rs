@@ -5,7 +5,7 @@ use std::ops::Deref;
 use std::sync::Arc;
 use tonic::transport::Channel;
 use user::pb::user::user_service_client::UserServiceClient;
-use user::pb::user::SendRegisterEmailCodeRequest;
+use user::pb::user::{BatchGetIsFollowedRequest, SendRegisterEmailCodeRequest};
 
 #[derive(Clone)]
 pub struct UserSrv {
@@ -166,5 +166,30 @@ impl UserSrv {
             .into_inner();
 
         Ok(resp.count)
+    }
+
+    pub async fn batch_get_is_followed(
+        &self,
+        is_followed_queries: Vec<(i64, i64)>,
+    ) -> anyhow::Result<HashMap<(i64, i64), bool>> {
+        let mut client = self.client.clone();
+        let resp = client
+            .batch_get_is_followed(BatchGetIsFollowedRequest {
+                query: is_followed_queries
+                    .into_iter()
+                    .map(|(follower, followee)| user::pb::user::IsFollowedQuery {
+                        follower,
+                        followee,
+                    })
+                    .collect(),
+            })
+            .await?
+            .into_inner();
+
+        Ok(resp
+            .result
+            .iter()
+            .map(|r| ((r.follower, r.followee), r.is_followed))
+            .collect())
     }
 }
