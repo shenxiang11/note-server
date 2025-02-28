@@ -1,4 +1,4 @@
-use crate::model::{Note, NoteStatus, NoteType, PublishedNote};
+use crate::model::{Note, NoteStatus, NoteType, PublishedNote, PublishedNoteStatus};
 use anyhow::Result;
 use sqlx::PgPool;
 
@@ -85,7 +85,20 @@ impl NoteRepo {
         Ok(result)
     }
 
-    pub async fn upsert(
+    pub async fn get_user_published_note_ids(&self, user_id: i64) -> Result<Vec<i64>> {
+        let result: Vec<i64> = sqlx::query_scalar(
+            r#"
+            SELECT id FROM published_notes WHERE user_id = $1;
+            "#,
+        )
+        .bind(user_id)
+        .fetch_all(&self.db_read)
+        .await?;
+
+        Ok(result)
+    }
+
+    pub async fn upsert_draft_note(
         &self,
         user_id: i64,
         id: Option<i64>,
@@ -120,28 +133,7 @@ impl NoteRepo {
                 .fetch_one(&self.db)
                 .await?;
 
-            let r = result.clone();
-
-            if result.status == NoteStatus::Published {
-                // 更新 published_notes 表，如果不存在则插入
-                sqlx::query(
-                    r#"
-                    INSERT INTO published_notes (id, user_id, title, content, images, video)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                    ON CONFLICT (id)
-                    DO UPDATE SET title = $3, content = $4, images = $5, video = $6;
-                "#,
-                )
-                .bind(result.id)
-                .bind(result.user_id)
-                .bind(result.title)
-                .bind(result.content)
-                .bind(result.images)
-                .bind(result.video)
-                .execute(&self.db)
-                .await?;
-            }
-            Ok(r)
+            Ok(result)
         } else {
             if title.is_none() {
                 return Err(anyhow::anyhow!("title is required"));
@@ -164,39 +156,43 @@ impl NoteRepo {
             .fetch_one(&self.db)
             .await?;
 
-            let r = result.clone();
-            // 发布的话，插入到 published_notes 表
-            if result.status == NoteStatus::Published {
-                sqlx::query(
-                    r#"
-                    INSERT INTO published_notes (id, user_id, title, content, images, video)
-                    VALUES ($1, $2, $3, $4, $5, $6);
-                "#,
-                )
-                .bind(result.id)
-                .bind(result.user_id)
-                .bind(result.title)
-                .bind(result.content)
-                .bind(result.images)
-                .bind(result.video)
-                .execute(&self.db)
-                .await?;
-            }
-
-            Ok(r)
+            Ok(result)
         }
     }
 
-    pub async fn get_user_published_note_ids(&self, user_id: i64) -> Result<Vec<i64>> {
-        let result: Vec<i64> = sqlx::query_scalar(
+    pub async fn publish_note(&self, user_id: i64, id: i64) -> Result<PublishedNote> {
+        let result: Note = sqlx::query_as(
             r#"
-            SELECT id FROM published_notes WHERE user_id = $1;
+            UPDATE notes
+            SET status = 'published', updated_at = now()
+            WHERE id = $1 AND user_id = $2
+            RETURNING *;
             "#,
         )
+        .bind(id)
         .bind(user_id)
-        .fetch_all(&self.db_read)
+        .fetch_one(&self.db)
         .await?;
 
-        Ok(result)
+        let published_note: PublishedNote = sqlx::query_as(
+            r#"
+            INSERT INTO published_notes (id, user_id, type, status, title, content, images, video)
+            VALUES ($1, $2, $3, $4, $5, COALESCE($6, null), $7, $8)
+            ON CONFLICT (id) DO UPDATE SET status = $4, title = $5, content = COALESCE($6, null), images = $7, video = $8, updated_at = now()
+            RETURNING *;
+            "#,
+        )
+            .bind(result.id)
+            .bind(result.user_id)
+            .bind(result.r#type)
+            .bind(PublishedNoteStatus::Published)
+            .bind(result.title)
+            .bind(result.content)
+            .bind(result.images)
+            .bind(result.video)
+            .fetch_one(&self.db)
+            .await?;
+
+        Ok(published_note)
     }
 }

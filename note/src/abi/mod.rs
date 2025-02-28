@@ -1,10 +1,11 @@
 use crate::model::NoteType;
 use crate::pb::note::{
     get_published_note_response, BatchGetPublishedNotesRequest, BatchGetPublishedNotesResponse,
-    CreateOrUpdateRequest, CreateOrUpdateResponse, GetPublishedNoteRequest,
+    CreateOrUpdateDraftRequest, CreateOrUpdateDraftResponse, GetPublishedNoteRequest,
     GetPublishedNoteResponse, GetPublishedNotesRequest, GetPublishedNotesResponse,
     GetUserPublishedNoteIdsRequest, GetUserPublishedNoteIdsResponse, GetUserPublishedNotesRequest,
-    GetUserPublishedNotesResponse, ImageList, NormalNote, VideoNote,
+    GetUserPublishedNotesResponse, ImageList, NormalNote, PublishDraftNoteRequest,
+    PublishDraftNoteResponse, VideoNote,
 };
 use crate::NoteSrv;
 use get_published_note_response::Note;
@@ -264,13 +265,25 @@ impl NoteSrv {
         }
     }
 
-    pub async fn create_or_update(
+    pub async fn publish_draft_note(
         &self,
-        req: CreateOrUpdateRequest,
-    ) -> Result<Response<CreateOrUpdateResponse>, Status> {
+        req: PublishDraftNoteRequest,
+    ) -> Result<Response<PublishDraftNoteResponse>, Status> {
+        let note = self.note_repo.publish_note(req.user_id, req.id).await;
+
+        match note {
+            Ok(_) => Ok(Response::new(PublishDraftNoteResponse {})),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn create_or_update_draft_note(
+        &self,
+        req: CreateOrUpdateDraftRequest,
+    ) -> Result<Response<CreateOrUpdateDraftResponse>, Status> {
         let note = self
             .note_repo
-            .upsert(
+            .upsert_draft_note(
                 req.user_id,
                 req.id,
                 req.title,
@@ -295,7 +308,7 @@ impl NoteSrv {
             .await;
 
         match note {
-            Ok(_) => Ok(Response::new(CreateOrUpdateResponse {})),
+            Ok(note) => Ok(Response::new(CreateOrUpdateDraftResponse { id: note.id })),
             Err(e) => Err(Status::internal(e.to_string())),
         }
     }

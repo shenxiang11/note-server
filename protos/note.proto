@@ -5,13 +5,21 @@ package note;
 import "google/protobuf/timestamp.proto";
 
 service NoteService {
-  rpc CreateOrUpdate(CreateOrUpdateRequest) returns (CreateOrUpdateResponse);
+  rpc CreateOrUpdateDraftNote(CreateOrUpdateDraftRequest) returns (CreateOrUpdateDraftResponse);
+  rpc PublishDraftNote(PublishDraftNoteRequest) returns (PublishDraftNoteResponse);
   rpc GetPublishedNote(GetPublishedNoteRequest) returns (GetPublishedNoteResponse);
   rpc GetPublishedNotes(GetPublishedNotesRequest) returns (GetPublishedNotesResponse);
   rpc GetUserPublishedNoteIds(GetUserPublishedNoteIdsRequest) returns (GetUserPublishedNoteIdsResponse);
   rpc GetUserPublishedNotes(GetUserPublishedNotesRequest) returns (GetUserPublishedNotesResponse);
   rpc BatchGetPublishedNotes(BatchGetPublishedNotesRequest) returns (BatchGetPublishedNotesResponse);
 }
+
+message PublishDraftNoteRequest {
+  int64 id = 1;
+  int64 user_id = 2;
+}
+
+message PublishDraftNoteResponse {}
 
 message BatchGetPublishedNotesRequest {
   repeated int64 ids = 1;
@@ -58,7 +66,7 @@ message ImageList {
   repeated string images = 1;
 }
 
-message CreateOrUpdateRequest {
+message CreateOrUpdateDraftRequest {
   int64 user_id = 1;
   optional int64 id = 2;
   optional string title = 3;
@@ -68,7 +76,9 @@ message CreateOrUpdateRequest {
   optional NoteStatus status = 7;
 }
 
-message CreateOrUpdateResponse {}
+message CreateOrUpdateDraftResponse {
+  int64 id = 1;
+}
 
 message GetPublishedNoteRequest {
   int64 id = 1;

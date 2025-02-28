@@ -4,8 +4,9 @@ use crate::util::time::PbTimestamp;
 use anyhow::Result;
 use note::pb::note::get_published_note_response::Note::{NormalNote, VideoNote};
 use note::pb::note::note_service_client::NoteServiceClient;
-use note::pb::note::ImageList;
-use note::pb::note::{CreateOrUpdateRequest, GetUserPublishedNoteIdsRequest};
+use note::pb::note::GetUserPublishedNoteIdsRequest;
+use note::pb::note::NoteStatus::{Draft, Published};
+use note::pb::note::{CreateOrUpdateDraftRequest, ImageList, PublishDraftNoteRequest};
 use std::ops::Deref;
 use std::sync::Arc;
 use tonic::transport::Channel;
@@ -161,14 +162,24 @@ impl NoteSrv {
         Ok(notes)
     }
 
-    pub async fn create_or_update(
+    pub async fn publish_note(&self, user_id: i64, note_id: i64) -> Result<()> {
+        let mut client = self.client.clone();
+        let request = tonic::Request::new(PublishDraftNoteRequest {
+            user_id,
+            id: note_id,
+        });
+        client.publish_draft_note(request).await?;
+        Ok(())
+    }
+
+    pub async fn create_or_update_draft(
         &self,
         user_id: i64,
         note_id: Option<i64>,
         input: EditNoteInput,
-    ) -> Result<()> {
+    ) -> Result<i64> {
         let mut client = self.client.clone();
-        let request = tonic::Request::new(CreateOrUpdateRequest {
+        let request = tonic::Request::new(CreateOrUpdateDraftRequest {
             user_id,
             id: note_id,
             title: input.title,
@@ -179,14 +190,14 @@ impl NoteSrv {
                 None
             },
             video: input.video,
-            status: if let Some(status) = input.status {
-                Some(status as i32)
+            status: if input.direct_publish {
+                Some(Published as i32)
             } else {
-                None
+                Some(Draft as i32)
             },
         });
-        client.create_or_update(request).await?;
-        Ok(())
+        let resp = client.create_or_update_draft_note(request).await?;
+        Ok(resp.into_inner().id)
     }
 
     pub async fn get_published_note_ids_by_user(&self, user_id: i64) -> Result<Vec<i64>> {

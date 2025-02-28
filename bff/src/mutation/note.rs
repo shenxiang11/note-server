@@ -24,10 +24,14 @@ impl NoteMutation {
         let state = ctx.data::<AppState>()?;
         let user_id = ctx.data::<i64>()?;
 
-        let _ = state
+        let note_id = state
             .note_srv
-            .create_or_update(*user_id, None, input)
+            .create_or_update_draft(*user_id, None, input.clone())
             .await?;
+
+        if input.direct_publish {
+            state.note_srv.publish_note(*user_id, note_id).await?;
+        }
 
         Ok("".to_string())
     }
@@ -42,10 +46,14 @@ impl NoteMutation {
         let state = ctx.data::<AppState>()?;
         let user_id = ctx.data::<i64>()?;
 
-        let _ = state
+        let note_id = state
             .note_srv
-            .create_or_update(*user_id, Some(note_id), input)
+            .create_or_update_draft(*user_id, Some(note_id), input.clone())
             .await?;
+
+        if input.direct_publish {
+            state.note_srv.publish_note(*user_id, note_id).await?;
+        }
 
         Ok("".to_string())
     }
@@ -193,5 +201,5 @@ pub struct EditNoteInput {
     pub content: Option<String>,
     pub images: Option<Vec<String>>,
     pub video: Option<String>,
-    pub status: Option<NoteStatus>,
+    pub direct_publish: bool,
 }
