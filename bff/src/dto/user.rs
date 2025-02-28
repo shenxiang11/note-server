@@ -23,9 +23,12 @@ pub struct User {
 #[ComplexObject]
 impl User {
     pub async fn is_self(&self, ctx: &Context<'_>) -> Result<bool> {
-        let user_id = ctx.data::<i64>()?;
+        let user_id = ctx.data::<i64>();
 
-        Ok(*user_id == self.id)
+        match user_id {
+            Ok(user_id) => Ok(*user_id == self.id),
+            Err(_) => Ok(false),
+        }
     }
 
     pub async fn is_followed(&self, ctx: &Context<'_>) -> Result<bool> {

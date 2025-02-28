@@ -9,36 +9,30 @@ pub(crate) struct UserQuery;
 
 #[Object]
 impl UserQuery {
-    pub async fn profile(&self, ctx: &Context<'_>, uid: Option<i64>) -> Result<User> {
+    #[graphql(guard = "AuthGuard")]
+    pub async fn profile_by_auth(&self, ctx: &Context<'_>) -> Result<User> {
         let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>();
+        let user_id = ctx.data::<i64>()?;
 
-        if uid.is_none() && user_id.is_err() {
-            return Err("user_id is required".into());
-        }
+        let user = state.user_srv.get_user_by_id(*user_id).await?;
+        Ok(user)
+    }
 
-        let user_id = uid.unwrap_or(*user_id.unwrap_or_else(|_| &-1));
+    pub async fn profile(&self, ctx: &Context<'_>, user_id: i64) -> Result<User> {
+        let state = ctx.data::<AppState>()?;
 
         let user = state.user_srv.get_user_by_id(user_id).await?;
         Ok(user)
     }
 
-    #[graphql(guard = "AuthGuard")]
     pub async fn user_notes(
         &self,
         ctx: &Context<'_>,
-        uid: Option<i64>,
+        user_id: i64,
         page_size: i64,
         cursor_id: Option<i64>,
     ) -> Result<Vec<Note>> {
         let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>();
-
-        if uid.is_none() && user_id.is_err() {
-            return Err("user_id is required".into());
-        }
-
-        let user_id = uid.unwrap_or(*user_id.unwrap_or_else(|_| &-1));
 
         let notes = state
             .note_srv
@@ -48,22 +42,14 @@ impl UserQuery {
         Ok(notes)
     }
 
-    #[graphql(guard = "AuthGuard")]
     pub async fn liked_notes(
         &self,
         ctx: &Context<'_>,
-        uid: Option<i64>,
+        user_id: i64,
         page_size: i64,
         cursor_id: Option<i64>,
     ) -> Result<Vec<Note>> {
         let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>();
-
-        if uid.is_none() && user_id.is_err() {
-            return Err("user_id is required".into());
-        }
-
-        let user_id = uid.unwrap_or(*user_id.unwrap_or_else(|_| &-1));
 
         let note_ids = state
             .interactive_srv
@@ -73,22 +59,14 @@ impl UserQuery {
         Ok(notes)
     }
 
-    #[graphql(guard = "AuthGuard")]
     pub async fn collected_notes(
         &self,
         ctx: &Context<'_>,
-        uid: Option<i64>,
+        user_id: i64,
         page_size: i64,
         cursor_id: Option<i64>,
     ) -> Result<Vec<Note>> {
         let state = ctx.data::<AppState>()?;
-        let user_id = ctx.data::<i64>();
-
-        if uid.is_none() && user_id.is_err() {
-            return Err("user_id is required".into());
-        }
-
-        let user_id = uid.unwrap_or(*user_id.unwrap_or_else(|_| &-1));
 
         let note_ids = state
             .interactive_srv
