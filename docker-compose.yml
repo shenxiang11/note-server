@@ -21,6 +21,12 @@ x-kraft: &common-config
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9091,2@kafka-2:9091,3@kafka-3:9091
   KAFKA_CFG_INTER_BROKER_LISTENER_NAME: BROKER
 
+# 镜像通用配置
+x-kafka: &kafka
+  image: 'bitnami/kafka:3.3.1'
+  networks:
+    kafka_net:
+
 services:
   postgres_primary:
     <<: *postgres-common
@@ -67,12 +73,6 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
-
-  # 镜像通用配置
-  x-kafka: &kafka
-    image: 'bitnami/kafka:3.3.1'
-    networks:
-      kafka_net:
 
     # combined server
   kafka-1:

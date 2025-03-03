@@ -11,12 +11,12 @@ x-kraft: &common-config
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9091,2@kafka-2:9091,3@kafka-3:9091
   KAFKA_CFG_INTER_BROKER_LISTENER_NAME: BROKER
 
-services:
-  x-kafka: &kafka
-    image: 'bitnami/kafka:3.3.1'
-    networks:
-      kafka_net:
+x-kafka: &kafka
+  image: 'bitnami/kafka:3.3.1'
+  networks:
+    kafka_net:
 
+services:
   kafka-1:
     <<: *kafka
     container_name: kafka-1
@@ -26,7 +26,7 @@ services:
       <<: *common-config
       KAFKA_CFG_BROKER_ID: 1
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9092
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://0.0.0.0:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://8.133.198.183:9092
     volumes:
       - ./kafka_data/kafka-1:/bitnami/kafka
 
@@ -39,7 +39,7 @@ services:
       <<: *common-config
       KAFKA_CFG_BROKER_ID: 2
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://0.0.0.0:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://8.133.198.183:9093
     volumes:
       - ./kafka_data/kafka-2:/bitnami/kafka
 
@@ -52,7 +52,7 @@ services:
       <<: *common-config
       KAFKA_CFG_BROKER_ID: 3
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9094
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://0.0.0.0:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://8.133.198.183:9094
     volumes:
       - ./kafka_data/kafka-3:/bitnami/kafka
 
@@ -66,7 +66,7 @@ services:
       KAFKA_CFG_BROKER_ID: 4
       KAFKA_CFG_PROCESS_ROLES: broker
       KAFKA_CFG_LISTENERS: BROKER://:9095
-      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://0.0.0.0:9095
+      KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://8.133.198.183:9095
     volumes:
       - ./kafka_data/kafka-4:/bitnami/kafka
 
