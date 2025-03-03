@@ -314,7 +314,7 @@ impl InteractiveRepo {
             SELECT biz_id
             FROM user_likes
             WHERE biz = $1 AND user_id = $2 AND deleted_at IS NULL AND biz_id < $3
-            ORDER BY id DESC
+            ORDER BY biz_id DESC
             LIMIT $4;
             "#,
         )

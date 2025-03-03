@@ -49,6 +49,7 @@ impl InteractiveSrv {
         &self,
         req: BatchGetIsLikedRequest,
     ) -> Result<Response<BatchGetIsLikedResponse>, Status> {
+        println!("1: {:?}", req);
         let ret: Result<UserLikesBiz, _> = req.biz.try_into();
         let biz = match ret {
             Ok(biz) => biz,
@@ -59,6 +60,8 @@ impl InteractiveSrv {
             .interactive_repo
             .batch_get_is_liked(biz, biz_ids_and_user_ids)
             .await;
+        println!("2: {:?}", ret);
+        println!("3: {:?}", biz);
 
         match ret {
             Ok(is_liked) => {
@@ -72,6 +75,7 @@ impl InteractiveSrv {
                         })
                         .collect(),
                 };
+
                 Ok(Response::new(resp))
             }
             Err(e) => Err(Status::internal(e.to_string())),

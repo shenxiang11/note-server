@@ -1,4 +1,6 @@
 use crate::config::AppConfig;
+use crate::data_loader::comment_liked_loader::CommentLikedLoader;
+use crate::data_loader::comment_likes_count_loader::CommentLikesCountLoader;
 use crate::data_loader::comment_replies_loader::CommentRepliesLoader;
 use crate::data_loader::note_collected_count_loader::NoteCollectedCountLoader;
 use crate::data_loader::note_collected_loader::NoteCollectedLoader;
@@ -7,6 +9,7 @@ use crate::data_loader::note_liked_loader::NoteLikedLoader;
 use crate::data_loader::note_likes_count_loader::NoteLikesCountLoader;
 use crate::data_loader::note_views_loader::NoteViewsLoader;
 use crate::data_loader::replies_count_loader::RepliesCountLoader;
+use crate::data_loader::reply_parent_loader::ReplyParentLoader;
 use crate::data_loader::user_followed_loader::UserFollowedLoader;
 use crate::data_loader::users_loader::UsersLoader;
 use crate::mutation::MutationRoot;
@@ -106,6 +109,18 @@ pub async fn start_server(
     ))
     .data(DataLoader::new(
         NoteLikedLoader::new(app_state.interactive_srv.clone()),
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        CommentLikesCountLoader::new(app_state.interactive_srv.clone()),
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        CommentLikedLoader::new(app_state.interactive_srv.clone()),
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        ReplyParentLoader::new(app_state.comment_srv.clone()),
         tokio::spawn,
     ))
     .data(app_state.clone())

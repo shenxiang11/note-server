@@ -1,10 +1,10 @@
-use crate::dto::comment::Comment;
+use crate::dto::comment::{Comment, Reply};
 use crate::util::time::PbTimestamp;
 use anyhow::Result;
 use comment::pb::comment::comment_service_client::CommentServiceClient;
 use comment::pb::comment::{
-    BatchGetNoteCommentsCountRequest, BatchGetRepliesCountRequest, BatchGetRepliesRequest,
-    CommentBiz, GetCommentsRequest, SaveCommentRequest,
+    BatchGetCommentsByIdsRequest, BatchGetNoteCommentsCountRequest, BatchGetRepliesCountRequest,
+    BatchGetRepliesRequest, CommentBiz, GetCommentRequest, GetCommentsRequest, SaveCommentRequest,
 };
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -32,6 +32,31 @@ impl CommentSrv {
     pub fn new(client: CommentServiceClient<Channel>) -> Self {
         Self {
             inner: Arc::new(CommentSrvInner { client }),
+        }
+    }
+
+    pub async fn get_comment_by_id(&self, id: i64) -> Result<Comment> {
+        let mut client = self.client.clone();
+        let ret = client
+            .get_comment(GetCommentRequest { id })
+            .await?
+            .into_inner();
+
+        match ret.comment {
+            Some(comment) => {
+                let c = comment;
+                Ok(Comment {
+                    id: c.id,
+                    user_id: c.user_id,
+                    content: c.content,
+                    created_at: PbTimestamp::from(c.created_at.unwrap_or_default()).into(),
+                    updated_at: PbTimestamp::from(c.updated_at.unwrap_or_default()).into(),
+                    biz_id: c.biz_id,
+                    parent_id: c.parent_id,
+                    root_id: c.root_id,
+                })
+            }
+            None => Err(anyhow::anyhow!("Failed to get comment")),
         }
     }
 
@@ -102,6 +127,20 @@ impl CommentSrv {
         Ok(comments)
     }
 
+    pub async fn batch_get_comments_by_ids(&self, ids: Vec<i64>) -> Result<HashMap<i64, Reply>> {
+        let mut client = self.client.clone();
+        let ret = client
+            .batch_get_comments_by_ids(BatchGetCommentsByIdsRequest { ids })
+            .await?
+            .into_inner();
+
+        Ok(ret
+            .comment
+            .into_iter()
+            .map(|c| (c.0, Comment::from(c.1).into()))
+            .collect())
+    }
+
     pub async fn create(
         &self,
         user_id: i64,
@@ -133,6 +172,9 @@ impl CommentSrv {
                     content: c.content,
                     created_at: PbTimestamp::from(c.created_at.unwrap_or_default()).into(),
                     updated_at: PbTimestamp::from(c.updated_at.unwrap_or_default()).into(),
+                    biz_id: c.biz_id,
+                    parent_id: c.parent_id,
+                    root_id: c.root_id,
                 })
             }
             None => Err(anyhow::anyhow!("Failed to create comment")),

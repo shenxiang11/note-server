@@ -10,6 +10,7 @@ pub enum CountBiz {
     NoteLike,
     NoteCollect,
     NoteComment,
+    CommentLike,
 }
 
 impl TryFrom<i32> for CountBiz {
@@ -21,6 +22,7 @@ impl TryFrom<i32> for CountBiz {
             2 => Ok(CountBiz::NoteLike),
             3 => Ok(CountBiz::NoteCollect),
             4 => Ok(CountBiz::NoteComment),
+            5 => Ok(CountBiz::CommentLike),
             _ => Err("invalid count biz"),
         }
     }
@@ -39,6 +41,13 @@ pub struct Counter {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteLikeMessage {
+    pub biz_id: i64,
+    pub user_id: i64,
+    pub like: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommentLikeMessage {
     pub biz_id: i64,
     pub user_id: i64,
     pub like: bool,

@@ -33,7 +33,7 @@ impl NoteRepo {
     pub async fn batch_get_published_notes(&self, ids: Vec<i64>) -> Result<Vec<PublishedNote>> {
         let result: Vec<PublishedNote> = sqlx::query_as(
             r#"
-            SELECT * FROM published_notes WHERE id = ANY($1);
+            SELECT * FROM published_notes WHERE id = ANY($1) ORDER BY id DESC;
             "#,
         )
         .bind(ids)

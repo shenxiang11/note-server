@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
         .create_pool(Some(Runtime::Tokio1))
         .expect("Failed to create redis pool");
 
-    let im_repo = IMRepo::new("http://192.168.1.6:10002".to_string(), rdb.clone());
+    let im_repo = IMRepo::new("http://192.168.1.12:10002".to_string(), rdb.clone());
     let tx1 = tx.clone();
     tokio::spawn(async move {
         let consumer = UserRegisterConsumer::new(cfg.kafka.brokers.clone(), im_repo);
@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
         tx1.send("done").await.expect("TODO: panic message");
     });
     let cfg = app_config.clone();
-    let im_repo = IMRepo::new("http://192.168.1.6:10002".to_string(), rdb);
+    let im_repo = IMRepo::new("http://192.168.1.12:10002".to_string(), rdb);
     tokio::spawn(async move {
         let consumer = UserUpdateConsumer::new(cfg.kafka.brokers.clone(), im_repo);
         if let Err(e) = consumer.consume().await {

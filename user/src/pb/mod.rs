@@ -14,6 +14,7 @@ impl From<User> for user::User {
                 seconds: user.created_at.timestamp(),
                 nanos: 0,
             }),
+            serial_number: user.serial_number,
         }
     }
 }

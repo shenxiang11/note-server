@@ -108,7 +108,7 @@ impl From<user::pb::user::User> for User {
     fn from(value: user::pb::user::User) -> Self {
         Self {
             id: value.id,
-            serial_number: "".to_string(),
+            serial_number: value.serial_number,
             fullname: value.fullname,
             email: value.email,
             avatar: value.avatar,

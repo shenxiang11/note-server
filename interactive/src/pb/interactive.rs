@@ -163,6 +163,7 @@ pub enum CountBiz {
     CountNoteLike = 2,
     CountNoteCollect = 3,
     CountNoteComment = 4,
+    CountCommentLike = 5,
 }
 impl CountBiz {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -176,6 +177,7 @@ impl CountBiz {
             Self::CountNoteLike => "COUNT_NOTE_LIKE",
             Self::CountNoteCollect => "COUNT_NOTE_COLLECT",
             Self::CountNoteComment => "COUNT_NOTE_COMMENT",
+            Self::CountCommentLike => "COUNT_COMMENT_LIKE",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -186,6 +188,7 @@ impl CountBiz {
             "COUNT_NOTE_LIKE" => Some(Self::CountNoteLike),
             "COUNT_NOTE_COLLECT" => Some(Self::CountNoteCollect),
             "COUNT_NOTE_COMMENT" => Some(Self::CountNoteComment),
+            "COUNT_COMMENT_LIKE" => Some(Self::CountCommentLike),
             _ => None,
         }
     }

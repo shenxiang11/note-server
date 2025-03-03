@@ -42,6 +42,7 @@ enum CountBiz {
   COUNT_NOTE_LIKE = 2;
   COUNT_NOTE_COLLECT = 3;
   COUNT_NOTE_COMMENT = 4;
+  COUNT_COMMENT_LIKE = 5;
 }
 
 message SaveCountRequest {

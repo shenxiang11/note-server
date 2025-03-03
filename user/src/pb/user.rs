@@ -133,6 +133,8 @@ pub struct User {
     pub bio: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "6")]
     pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(string, tag = "7")]
+    pub serial_number: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchGetUsersRequest {

@@ -35,6 +35,19 @@ impl CommentRepo {
         }
     }
 
+    pub async fn get_by_id(&self, id: i64) -> Result<Comment> {
+        let result: Comment = sqlx::query_as(
+            r#"
+            SELECT * FROM comments WHERE id = $1;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(&self.db_read)
+        .await?;
+
+        Ok(result)
+    }
+
     pub async fn batch_get_replies_count(&self, biz_ids: Vec<i64>) -> Result<HashMap<i64, i64>> {
         let counts: HashMap<i64, i64> = sqlx::query(
             r#"
@@ -123,23 +136,51 @@ impl CommentRepo {
         min_id: i64,
         limit: i64,
     ) -> Result<Vec<Comment>> {
-        let ret: Vec<Comment> = sqlx::query_as(
+        let query_str = if biz == CommentBiz::Note {
             r#"
             SELECT *
             FROM comments
             WHERE biz = $1 AND biz_id = $2 AND  id < $3
             ORDER BY id DESC
             LIMIT $4;
+            "#
+        } else {
+            r#"
+            SELECT *
+            FROM comments
+            WHERE biz = $1 AND biz_id = $2 AND  id > $3
+            LIMIT $4;
+            "#
+        };
+        let ret: Vec<Comment> = sqlx::query_as(query_str)
+            .bind(biz as CommentBiz)
+            .bind(biz_id)
+            .bind(min_id)
+            .bind(limit)
+            .fetch_all(&self.db_read)
+            .await?;
+
+        Ok(ret)
+    }
+
+    pub async fn batch_get_comments_by_ids(&self, ids: Vec<i64>) -> Result<HashMap<i64, Comment>> {
+        let comments: Vec<Comment> = sqlx::query_as(
+            r#"
+            SELECT *
+            FROM comments
+            WHERE id = ANY($1);
             "#,
         )
-        .bind(biz as CommentBiz)
-        .bind(biz_id)
-        .bind(min_id)
-        .bind(limit)
+        .bind(ids)
         .fetch_all(&self.db_read)
         .await?;
 
-        Ok(ret)
+        let mut result: HashMap<i64, Comment> = HashMap::new();
+        for comment in comments {
+            result.insert(comment.id, comment);
+        }
+
+        Ok(result)
     }
 }
 

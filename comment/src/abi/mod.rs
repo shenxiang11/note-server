@@ -1,8 +1,8 @@
 use crate::model::CommentBiz;
 use crate::pb::comment;
 use crate::pb::comment::{
-    BatchGetRepliesCountResponse, GetCommentsRequest, GetCommentsResponse, ListOfComment,
-    SaveCommentRequest,
+    BatchGetRepliesCountResponse, GetCommentRequest, GetCommentResponse, GetCommentsRequest,
+    GetCommentsResponse, ListOfComment, SaveCommentRequest,
 };
 use crate::{comment_to_pb, CommentSrv};
 use comment::{BatchGetRepliesResponse, SaveCommentResponse};
@@ -50,6 +50,20 @@ impl CommentSrv {
                     .collect();
                 Ok(Response::new(BatchGetRepliesResponse { replies }))
             }
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn get_comment(
+        &self,
+        req: GetCommentRequest,
+    ) -> Result<Response<GetCommentResponse>, Status> {
+        let ret = self.comment_repo.get_by_id(req.id).await;
+
+        match ret {
+            Ok(comment) => Ok(Response::new(GetCommentResponse {
+                comment: Some(comment_to_pb(comment)),
+            })),
             Err(e) => Err(Status::internal(e.to_string())),
         }
     }
@@ -117,6 +131,22 @@ impl CommentSrv {
         Ok(Response::new(comment::BatchGetNoteCommentsCountResponse {
             note_comments_count: hm,
         }))
-        // todo!()
+    }
+
+    pub async fn batch_get_comments_by_ids(
+        &self,
+        req: comment::BatchGetCommentsByIdsRequest,
+    ) -> Result<Response<comment::BatchGetCommentsByIdsResponse>, Status> {
+        let ret = self.comment_repo.batch_get_comments_by_ids(req.ids).await;
+
+        match ret {
+            Ok(comment) => Ok(Response::new(comment::BatchGetCommentsByIdsResponse {
+                comment: comment
+                    .into_iter()
+                    .map(|c| (c.0, comment_to_pb(c.1)))
+                    .collect(),
+            })),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
     }
 }

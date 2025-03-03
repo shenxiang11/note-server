@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS published_notes (
 );
 
 -- Create Counter Biz Types
-CREATE TYPE count_biz AS ENUM ('note_read', 'note_like', 'note_collect', 'note_comment');
+CREATE TYPE count_biz AS ENUM ('note_read', 'note_like', 'note_collect', 'note_comment', 'comment_like');
 
 -- Create Counter Table
 CREATE TABLE IF NOT EXISTS counters (

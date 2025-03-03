@@ -6,12 +6,30 @@ import "google/protobuf/timestamp.proto";
 
 service CommentService {
   rpc SaveComment(SaveCommentRequest) returns (SaveCommentResponse);
+  rpc GetComment(GetCommentRequest) returns (GetCommentResponse);
   rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse);
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
   rpc BatchGetReplies(BatchGetRepliesRequest) returns (BatchGetRepliesResponse);
   rpc BatchGetRepliesCount(BatchGetRepliesCountRequest) returns (BatchGetRepliesCountResponse);
   rpc BatchGetNoteCommentsCount(BatchGetNoteCommentsCountRequest) returns (BatchGetNoteCommentsCountResponse);
   rpc GetMoreComments(GetMoreCommentsRequest) returns (GetMoreCommentsResponse);
+  rpc BatchGetCommentsByIds(BatchGetCommentsByIdsRequest) returns (BatchGetCommentsByIdsResponse);
+}
+
+message BatchGetCommentsByIdsRequest {
+  repeated int64 ids = 1;
+}
+
+message BatchGetCommentsByIdsResponse {
+  map<int64, Comment> comment = 1;
+}
+
+message GetCommentRequest {
+  int64 id = 1;
+}
+
+message GetCommentResponse {
+  Comment comment = 1;
 }
 
 enum CommentBiz {

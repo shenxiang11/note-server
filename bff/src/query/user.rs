@@ -55,7 +55,9 @@ impl UserQuery {
             .interactive_srv
             .get_user_liked_note_ids(user_id, page_size, cursor_id)
             .await?;
+
         let notes = state.note_srv.batch_get_published_notes(note_ids).await?;
+
         Ok(notes)
     }
 
