@@ -12,8 +12,7 @@ x-kraft: &common-config
   KAFKA_CFG_INTER_BROKER_LISTENER_NAME: BROKER
 
 x-kafka: &kafka
-  image: 'bitnami/kafka:3.3.1'
-  user: 1000:1000
+  image: 'bitnami/kafka:3.4.1'
   networks:
     kafka_net:
 
@@ -28,6 +27,8 @@ services:
       KAFKA_CFG_BROKER_ID: 1
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9092
       KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://172.24.88.54:9092
+    volumes:
+      - ./kafka_data/kafka-1:/bitnami/kafka
 
   kafka-2:
     <<: *kafka
@@ -39,6 +40,8 @@ services:
       KAFKA_CFG_BROKER_ID: 2
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9093
       KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://172.24.88.54:9093
+    volumes:
+      - ./kafka_data/kafka-2:/bitnami/kafka
 
   kafka-3:
     <<: *kafka
@@ -50,6 +53,8 @@ services:
       KAFKA_CFG_BROKER_ID: 3
       KAFKA_CFG_LISTENERS: CONTROLLER://:9091,BROKER://:9094
       KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://172.24.88.54:9094
+    volumes:
+      - ./kafka_data/kafka-3:/bitnami/kafka
 
   kafka-4:
     <<: *kafka
@@ -62,6 +67,8 @@ services:
       KAFKA_CFG_PROCESS_ROLES: broker
       KAFKA_CFG_LISTENERS: BROKER://:9095
       KAFKA_CFG_ADVERTISED_LISTENERS: BROKER://172.24.88.54:9095
+    volumes:
+      - ./kafka_data/kafka-4:/bitnami/kafka
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -78,6 +85,9 @@ services:
       KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
     networks:
       - kafka_net
+
+volumes:
+  kafka_data:
 
 networks:
   kafka_net:
