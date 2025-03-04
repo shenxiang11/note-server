@@ -45,8 +45,14 @@ pub struct KafkaConfig {
 
 impl AppConfig {
     pub fn load() -> Self {
+        let env = std::env::var("NOTE_ENV").unwrap_or_else(|_| "test".to_string());
+
         #[cfg(not(test))]
-        let config_data = include_str!("../config.test.toml");
+        let config_data = if env == "test" {
+            include_str!("../config.test.toml")
+        } else {
+            include_str!("../config.prod.toml")
+        };
         #[cfg(test)]
         let config_data = include_str!("../config.test.toml");
 

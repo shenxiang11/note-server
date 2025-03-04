@@ -267,22 +267,22 @@ impl AppState {
 
         let message_queue = MessageQueue::new(app_config.kafka.brokers.clone());
 
-        let interactive_client = InteractiveServiceClient::connect("http://127.0.0.1:50001")
+        let interactive_client = InteractiveServiceClient::connect("http://0.0.0.0:50001")
             .await
             .expect("Failed to connect to interactive service");
         let interactive_srv = InteractiveSrv::new(interactive_client);
 
-        let comment_client = CommentServiceClient::connect("http://127.0.0.1:50002")
+        let comment_client = CommentServiceClient::connect("http://0.0.0.0:50002")
             .await
             .expect("Failed to connect to comment service");
         let comment_srv = CommentSrv::new(comment_client);
 
-        let note_client = NoteServiceClient::connect("http://127.0.0.1:50003")
+        let note_client = NoteServiceClient::connect("http://0.0.0.0:50003")
             .await
             .expect("Failed to connect to note service");
         let note_srv = NoteSrv::new(note_client);
 
-        let user_service = UserServiceClient::connect("http://127.0.0.1:50004")
+        let user_service = UserServiceClient::connect("http://0.0.0.0:50004")
             .await
             .expect("Failed to connect to user service");
         let user_srv = UserSrv::new(user_service);

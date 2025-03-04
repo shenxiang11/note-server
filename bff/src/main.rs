@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
 
     let app_state = AppState::new(app_config.clone()).await;
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], app_config.server.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], app_config.server.port));
     start_server(app_state, addr).await?;
 
     Ok(())
