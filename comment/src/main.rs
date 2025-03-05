@@ -13,7 +13,7 @@ mod model;
 async fn main() -> Result<()> {
     let app_config = AppConfig::load();
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], app_config.server.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], app_config.server.port));
 
     let db = PgPool::connect(app_config.server.postgres_url.as_str())
         .await
