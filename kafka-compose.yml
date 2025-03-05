@@ -27,8 +27,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '0.3'
+          memory: 128M
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
