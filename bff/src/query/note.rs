@@ -52,6 +52,7 @@ impl NoteQuery {
                 "NoteRead",
             );
             if let Err(e) = ret {
+                println!("failed to produce message: {}", e.to_string());
                 error!("failed to produce message: {}", e);
             }
         });

@@ -19,4 +19,4 @@ MCowBQYDK2VwAyEAfM+lwNHj6TRJ3EGP38lIJcOo9Dlt2u2JzcwWMbu7jQY=
 """
 
 [kafka]
-brokers = ["alikafka-post-cn-ux145v8ke00d-1-vpc.alikafka.aliyuncs.com:9092", "alikafka-post-cn-ux145v8ke00d-2-vpc.alikafka.aliyuncs.com:9092", "alikafka-post-cn-ux145v8ke00d-3-vpc.alikafka.aliyuncs.com:9092"]
+brokers = ["localhost:9092"]
