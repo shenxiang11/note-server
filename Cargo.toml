@@ -1,5 +1,5 @@
 [workspace]
-members = ["comment", "im", "interactive", "note", "user", "bff"]
+members = ["bff", "comment", "im", "interactive", "note", "user"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -12,7 +12,6 @@ axum = { version = "0.7.9", features = ["http2"] }
 axum-server = { version = "0.7.1", features = ["tls-rustls"] }
 chrono = { version = "0.4.39", features = ["serde"] }
 futures = { version = "0.3.31" }
-hyper = { version = "1.5.1", features = ["http2"] }
 sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio", "chrono"] }
 thiserror = { version = "1.0.24" }
 tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread", "signal"] }
