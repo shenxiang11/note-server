@@ -127,9 +127,6 @@ impl InteractiveSrv {
             .await?
             .into_inner();
 
-        println!("{:?}", biz);
-        println!("{:?}", resp);
-
         Ok(resp
             .results
             .iter()

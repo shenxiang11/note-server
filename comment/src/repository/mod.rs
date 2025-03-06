@@ -228,14 +228,11 @@ mod tests {
         let ret = repo.find_by_biz(biz, biz_id, min_id, limit).await;
         assert!(ret.is_ok());
 
-        println!("{:?}", ret);
-
         if ret.is_ok() {
             let comments = ret.unwrap();
             let min_id = comments.last().unwrap().id;
             let ret = repo.find_by_biz(biz, biz_id, min_id, limit).await;
             assert!(ret.is_ok());
-            println!("{:?}", ret);
         }
     }
 }
