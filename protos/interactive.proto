@@ -3,6 +3,8 @@ syntax = "proto3";
 package interactive;
 
 service InteractiveService {
+  rpc IncreaseCount(IncreaseCountRequest) returns (IncreaseCountResponse);
+  rpc DecreaseCount(DecreaseCountRequest) returns (DecreaseCountResponse);
   rpc SaveCount(SaveCountRequest) returns (SaveCountResponse);
   rpc GetCount(GetCountRequest) returns (GetCountResponse);
   rpc BatchGetCount(BatchGetCountRequest) returns (BatchGetCountResponse);
@@ -15,6 +17,20 @@ service InteractiveService {
   rpc GetUserLikedNoteIds(GetUserLikedNoteIdsRequest) returns (GetUserLikedNoteIdsResponse);
   rpc GetUserCollectedNoteIds(GetUserCollectedNoteIdsRequest) returns (GetUserCollectedNoteIdsResponse);
 }
+
+message IncreaseCountRequest {
+  CountBiz biz = 1;
+  int64 biz_id = 2;
+}
+
+message IncreaseCountResponse {}
+
+message DecreaseCountRequest {
+  CountBiz biz = 1;
+  int64 biz_id = 2;
+}
+
+message DecreaseCountResponse {}
 
 message GetUserLikedNoteIdsRequest {
   int64 user_id = 1;

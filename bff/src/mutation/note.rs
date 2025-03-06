@@ -1,14 +1,9 @@
-use crate::dto::note::NoteStatus;
 use crate::util::AuthGuard;
 use crate::AppState;
 use async_graphql::{Context, InputObject, Object};
-use interactive::model::{
-    NoteCollectMessage, NoteCommentMessage, NoteLikeMessage, UserCollectsBiz,
-};
 use interactive::pb::UserCollectsBiz::UserCollectsNote;
-use interactive::pb::UserLikesBiz;
+use interactive::pb::{CountBiz, UserLikesBiz};
 use serde::{Deserialize, Serialize};
-use tracing::error;
 
 #[derive(Default)]
 pub(crate) struct NoteMutation;
@@ -67,25 +62,12 @@ impl NoteMutation {
             .collect(user_id, UserCollectsNote, id)
             .await?;
 
+        let state = state.clone();
         tokio::spawn(async move {
-            let data = NoteCollectMessage {
-                biz_id: id,
-                user_id,
-                collect: true,
-            };
-            let data = serde_json::to_string(&data);
-            if let Err(e) = data {
-                error!("failed to serialize note like message: {}", e);
-                return;
-            }
-            let ret = state.message_queue.produce_message(
-                id.to_string().as_bytes(),
-                String::as_bytes(&data.unwrap_or_default()),
-                "NoteCollect",
-            );
-            if let Err(e) = ret {
-                error!("failed to produce message: {}", e);
-            }
+            state
+                .interactive_srv
+                .increase_count(CountBiz::CountNoteCollect, id)
+                .await
         });
 
         Ok("success".to_string())
@@ -104,25 +86,12 @@ impl NoteMutation {
             .uncollect(user_id, UserCollectsNote, id)
             .await?;
 
+        let state = state.clone();
         tokio::spawn(async move {
-            let data = NoteCollectMessage {
-                biz_id: id,
-                user_id,
-                collect: false,
-            };
-            let data = serde_json::to_string(&data);
-            if let Err(e) = data {
-                error!("failed to serialize note like message: {}", e);
-                return;
-            }
-            let ret = state.message_queue.produce_message(
-                id.to_string().as_bytes(),
-                String::as_bytes(&data.unwrap_or_default()),
-                "NoteCollect",
-            );
-            if let Err(e) = ret {
-                error!("failed to produce message: {}", e);
-            }
+            state
+                .interactive_srv
+                .decrease_count(CountBiz::CountNoteCollect, id)
+                .await
         });
 
         Ok("success".to_string())
@@ -132,30 +101,17 @@ impl NoteMutation {
     pub async fn like_note(&self, ctx: &Context<'_>, id: i64) -> async_graphql::Result<String> {
         let state = ctx.data::<AppState>()?.clone();
         let user_id = ctx.data::<i64>()?.clone();
-        let ret = state
+        let _ = state
             .interactive_srv
             .like(user_id, UserLikesBiz::UserLikesNote, id)
             .await?;
 
+        let state = state.clone();
         tokio::spawn(async move {
-            let data = NoteLikeMessage {
-                biz_id: id,
-                user_id,
-                like: true,
-            };
-            let data = serde_json::to_string(&data);
-            if let Err(e) = data {
-                error!("failed to serialize note like message: {}", e);
-                return;
-            }
-            let ret = state.message_queue.produce_message(
-                id.to_string().as_bytes(),
-                String::as_bytes(&data.unwrap_or_default()),
-                "NoteLike",
-            );
-            if let Err(e) = ret {
-                error!("failed to produce message: {}", e);
-            }
+            state
+                .interactive_srv
+                .increase_count(CountBiz::CountNoteLike, id)
+                .await
         });
 
         Ok("success".to_string())
@@ -170,25 +126,12 @@ impl NoteMutation {
             .unlike(user_id, UserLikesBiz::UserLikesNote, id)
             .await?;
 
+        let state = state.clone();
         tokio::spawn(async move {
-            let data = NoteLikeMessage {
-                biz_id: id,
-                user_id,
-                like: false,
-            };
-            let data = serde_json::to_string(&data);
-            if let Err(e) = data {
-                error!("failed to serialize note like message: {}", e);
-                return;
-            }
-            let ret = state.message_queue.produce_message(
-                id.to_string().as_bytes(),
-                String::as_bytes(&data.unwrap_or_default()),
-                "NoteLike",
-            );
-            if let Err(e) = ret {
-                error!("failed to produce message: {}", e);
-            }
+            state
+                .interactive_srv
+                .decrease_count(CountBiz::CountNoteLike, id)
+                .await
         });
 
         Ok("success".to_string())

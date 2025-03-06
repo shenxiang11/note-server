@@ -1,11 +1,7 @@
 use crate::dto::user::User;
 use crate::util::AuthGuard;
 use crate::AppState;
-use async_graphql::validators::email;
 use async_graphql::{Context, Object, Result};
-use im::consumer::user_register_consumer::UserRegisterMessage;
-use im::consumer::user_update_consumer::UserUpdateMessage;
-use tracing::error;
 
 #[derive(Default)]
 pub(crate) struct UserMutation;
@@ -48,28 +44,28 @@ impl UserMutation {
             .update_user(user_id, fullname.clone(), avatar.clone(), bio)
             .await?;
 
-        if fullname.is_some() || avatar.is_some() {
-            tokio::spawn(async move {
-                let data = UserUpdateMessage {
-                    user_id,
-                    nickname: fullname.unwrap_or_default(),
-                    face_url: avatar.unwrap_or_default(),
-                };
-                let data = serde_json::to_string(&data);
-                if let Err(e) = data {
-                    error!("failed to serialize user update message: {}", e);
-                    return;
-                }
-                let ret = state.message_queue.produce_message(
-                    user_id.to_string().as_bytes(),
-                    String::as_bytes(&data.unwrap_or_default()),
-                    "UserUpdate",
-                );
-                if let Err(e) = ret {
-                    error!("failed to produce message: {}", e);
-                }
-            });
-        }
+        // if fullname.is_some() || avatar.is_some() {
+        //     tokio::spawn(async move {
+        //         let data = UserUpdateMessage {
+        //             user_id,
+        //             nickname: fullname.unwrap_or_default(),
+        //             face_url: avatar.unwrap_or_default(),
+        //         };
+        //         let data = serde_json::to_string(&data);
+        //         if let Err(e) = data {
+        //             error!("failed to serialize user update message: {}", e);
+        //             return;
+        //         }
+        //         let ret = state.message_queue.produce_message(
+        //             user_id.to_string().as_bytes(),
+        //             String::as_bytes(&data.unwrap_or_default()),
+        //             "UserUpdate",
+        //         );
+        //         if let Err(e) = ret {
+        //             error!("failed to produce message: {}", e);
+        //         }
+        //     });
+        // }
 
         Ok("".to_string())
     }
@@ -100,29 +96,29 @@ impl UserMutation {
 
         let user = state.user_srv.create_user(email, password, code).await?;
 
-        let user_ret = user.clone();
-        tokio::spawn(async move {
-            let data = UserRegisterMessage {
-                user_id: user.id,
-                nickname: user.fullname.clone(),
-                face_url: user.avatar.clone(),
-            };
-            let data = serde_json::to_string(&data);
-            if let Err(e) = data {
-                error!("failed to serialize user register message: {}", e);
-                return;
-            }
-            let ret = state.message_queue.produce_message(
-                user.id.to_string().as_bytes(),
-                String::as_bytes(&data.unwrap_or_default()),
-                "UserRegister",
-            );
-            if let Err(e) = ret {
-                error!("failed to produce message: {}", e);
-            }
-        });
+        // let user_ret = user.clone();
+        // tokio::spawn(async move {
+        //     let data = UserRegisterMessage {
+        //         user_id: user.id,
+        //         nickname: user.fullname.clone(),
+        //         face_url: user.avatar.clone(),
+        //     };
+        //     let data = serde_json::to_string(&data);
+        //     if let Err(e) = data {
+        //         error!("failed to serialize user register message: {}", e);
+        //         return;
+        //     }
+        //     let ret = state.message_queue.produce_message(
+        //         user.id.to_string().as_bytes(),
+        //         String::as_bytes(&data.unwrap_or_default()),
+        //         "UserRegister",
+        //     );
+        //     if let Err(e) = ret {
+        //         error!("failed to produce message: {}", e);
+        //     }
+        // });
 
-        Ok(user_ret)
+        Ok(user)
     }
 
     // 发送邮箱注册验证码

@@ -2,10 +2,11 @@ use crate::pb::interactive_service_server::InteractiveService;
 use crate::pb::{
     BatchGetCountRequest, BatchGetCountResponse, BatchGetIsCollectedRequest,
     BatchGetIsCollectedResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse, CollectRequest,
-    CollectResponse, GetCountRequest, GetCountResponse, GetUserCollectedNoteIdsRequest,
-    GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest, GetUserLikedNoteIdsResponse,
-    LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse, UncollectRequest,
-    UncollectResponse, UnlikeRequest, UnlikeResponse,
+    CollectResponse, DecreaseCountRequest, DecreaseCountResponse, GetCountRequest,
+    GetCountResponse, GetUserCollectedNoteIdsRequest, GetUserCollectedNoteIdsResponse,
+    GetUserLikedNoteIdsRequest, GetUserLikedNoteIdsResponse, IncreaseCountRequest,
+    IncreaseCountResponse, LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse,
+    UncollectRequest, UncollectResponse, UnlikeRequest, UnlikeResponse,
 };
 use crate::repository::InteractiveRepo;
 use tonic::{async_trait, IntoRequest, Request, Response, Status};
@@ -29,6 +30,20 @@ impl InteractiveSrv {
 
 #[async_trait]
 impl InteractiveService for InteractiveSrv {
+    async fn increase_count(
+        &self,
+        request: Request<IncreaseCountRequest>,
+    ) -> Result<Response<IncreaseCountResponse>, Status> {
+        self.increase_count(request.into_inner()).await
+    }
+
+    async fn decrease_count(
+        &self,
+        request: Request<DecreaseCountRequest>,
+    ) -> Result<Response<DecreaseCountResponse>, Status> {
+        self.decrease_count(request.into_inner()).await
+    }
+
     async fn save_count(
         &self,
         request: Request<SaveCountRequest>,

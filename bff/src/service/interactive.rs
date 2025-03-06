@@ -34,6 +34,30 @@ impl InteractiveSrv {
         }
     }
 
+    pub async fn increase_count(&self, biz: CountBiz, biz_id: i64) -> Result<()> {
+        let mut client = self.client.clone();
+        client
+            .increase_count(interactive::pb::IncreaseCountRequest {
+                biz: biz as i32,
+                biz_id,
+            })
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn decrease_count(&self, biz: CountBiz, biz_id: i64) -> Result<()> {
+        let mut client = self.client.clone();
+        client
+            .decrease_count(interactive::pb::DecreaseCountRequest {
+                biz: biz as i32,
+                biz_id,
+            })
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn collect(&self, user_id: i64, biz: UserCollectsBiz, biz_id: i64) -> Result<()> {
         let mut client = self.client.clone();
         client

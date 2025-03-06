@@ -3,15 +3,52 @@ use crate::pb::{
     BatchGetCountRequest, BatchGetCountResponse, BatchGetIsCollectedRequest,
     BatchGetIsCollectedResponse, BatchGetIsLikedRequest, BatchGetIsLikedResponse,
     BizIdsAndUserIdsAndIsCollected, BizIdsAndUserIdsAndIsLiked, CollectRequest, CollectResponse,
-    GetCountRequest, GetCountResponse, GetUserCollectedNoteIdsRequest,
-    GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest, GetUserLikedNoteIdsResponse,
-    LikeRequest, LikeResponse, SaveCountRequest, SaveCountResponse, UncollectRequest,
-    UncollectResponse, UnlikeRequest, UnlikeResponse,
+    DecreaseCountRequest, DecreaseCountResponse, GetCountRequest, GetCountResponse,
+    GetUserCollectedNoteIdsRequest, GetUserCollectedNoteIdsResponse, GetUserLikedNoteIdsRequest,
+    GetUserLikedNoteIdsResponse, IncreaseCountRequest, IncreaseCountResponse, LikeRequest,
+    LikeResponse, SaveCountRequest, SaveCountResponse, UncollectRequest, UncollectResponse,
+    UnlikeRequest, UnlikeResponse,
 };
 use crate::InteractiveSrv;
 use tonic::{Response, Status};
 
 impl InteractiveSrv {
+    pub async fn increase_count(
+        &self,
+        req: IncreaseCountRequest,
+    ) -> Result<Response<IncreaseCountResponse>, Status> {
+        let ret: Result<CountBiz, _> = req.biz.try_into();
+        let biz = match ret {
+            Ok(biz) => biz,
+            Err(e) => return Err(Status::invalid_argument(e.to_string())),
+        };
+
+        let ret = self.interactive_repo.save_count(biz, req.biz_id, 1).await;
+
+        match ret {
+            Ok(_) => Ok(Response::new(IncreaseCountResponse {})),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
+    pub async fn decrease_count(
+        &self,
+        req: DecreaseCountRequest,
+    ) -> Result<Response<DecreaseCountResponse>, Status> {
+        let ret: Result<CountBiz, _> = req.biz.try_into();
+        let biz = match ret {
+            Ok(biz) => biz,
+            Err(e) => return Err(Status::invalid_argument(e.to_string())),
+        };
+
+        let ret = self.interactive_repo.save_count(biz, req.biz_id, -1).await;
+
+        match ret {
+            Ok(_) => Ok(Response::new(DecreaseCountResponse {})),
+            Err(e) => Err(Status::internal(e.to_string())),
+        }
+    }
+
     pub async fn batch_get_is_collected(
         &self,
         req: BatchGetIsCollectedRequest,
