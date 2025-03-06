@@ -23,7 +23,7 @@ services:
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://0.133.198.183:9092
-      - KAFKA_HEAP_OPTS=-Xmx256M -Xms256M
+      - KAFKA_HEAP_OPTS=-Xmx512M -Xms512M
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
